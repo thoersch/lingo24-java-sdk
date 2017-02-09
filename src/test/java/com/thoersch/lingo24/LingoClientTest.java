@@ -14,7 +14,6 @@ public class LingoClientTest extends TestCase {
     @Before
     public void setup() {
         lingoClient = new LingoClient("FILL", "ME", "IN", "PLEASE", true);
-
     }
 
     @Test
@@ -33,7 +32,7 @@ public class LingoClientTest extends TestCase {
     }
 
     @Test
-    public void shouldReturnServicesForAuthenticateUser() {
+    public void shouldReturnServicesForAuthenticatedUser() {
         String accessToken = lingoClient.getAccessToken().getAccessToken();
         System.out.println(lingoClient.getServices(accessToken ));
     }
@@ -43,5 +42,18 @@ public class LingoClientTest extends TestCase {
         String accessToken = lingoClient.getAccessToken().getAccessToken();
         long serviceId = lingoClient.getServices(accessToken).get(0).getId();
         System.out.println(lingoClient.getServiceById(accessToken, serviceId));
+    }
+
+    @Test
+    public void shouldReturnLocalesForAuthenticatedUser() {
+        String accessToken = lingoClient.getAccessToken().getAccessToken();
+        System.out.println(lingoClient.getLocales(accessToken));
+    }
+
+    @Test
+    public void shouldReturnSpecificLocaleById() {
+        String accessToken = lingoClient.getAccessToken().getAccessToken();
+        long localeId = lingoClient.getLocales(accessToken).get(0).getId();
+        System.out.println(lingoClient.getLocaleById(accessToken, localeId));
     }
 }

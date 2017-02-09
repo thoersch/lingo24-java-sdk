@@ -7,13 +7,14 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.ObjectMapper;
 import com.mashape.unirest.http.Unirest;
-import com.thoersch.lingo24.representations.ApiInformation;
-import com.thoersch.lingo24.representations.ApiStatus;
-import com.thoersch.lingo24.representations.OauthToken;
-import com.thoersch.lingo24.representations.Service;
+import com.thoersch.lingo24.representations.*;
 import org.json.JSONArray;
 import java.io.IOException;
-import java.util.*;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class LingoClient {
     private static final Double VERSION = 1.0;
@@ -31,6 +32,7 @@ public class LingoClient {
     private static final String APPLICATION_JSON = "application/json";
     private static final String AUTHORIZATION_KEY = "Authorization";
     private static final String AUTHORIZATION_VALUE_FORMAT = "Bearer %s";
+    private static final String CONTENT = "content";
 
     private final String refreshToken;
     private final String clientId;
@@ -96,7 +98,7 @@ public class LingoClient {
 
         try {
             HttpResponse<JsonNode> response = Unirest.get(url).headers(getHeadersWithAuthorization(accessToken)).asJson();
-            JSONArray jsonResponse = response.getBody().getObject().getJSONArray("content");
+            JSONArray jsonResponse = response.getBody().getObject().getJSONArray(CONTENT);
             return getObjectMapper().readValue(jsonResponse.toString(), new TypeReference<ArrayList<Service>>() {});
         } catch (Exception e) {
             throw new LingoException(e);
@@ -108,6 +110,30 @@ public class LingoClient {
 
         try {
             HttpResponse<Service> response = Unirest.get(url).headers(getHeadersWithAuthorization(accessToken)).routeParam("id", Long.toString(id)).asObject(Service.class);
+            return response.getBody();
+        } catch (Exception e) {
+            throw new LingoException(e);
+        }
+    }
+
+    public List<Locale> getLocales(String accessToken) {
+        final String url = getBaseUrl() + "/locales";
+
+        try {
+            // better pagination controls
+            HttpResponse<JsonNode> response = Unirest.get(url).headers(getHeadersWithAuthorization(accessToken)).queryString("size", 100).asJson();
+            JSONArray jsonResponse = response.getBody().getObject().getJSONArray(CONTENT);
+            return getObjectMapper().readValue(jsonResponse.toString(), new TypeReference<ArrayList<Locale>>() {});
+        } catch (Exception e) {
+            throw new LingoException(e);
+        }
+    }
+
+    public Locale getLocaleById(String accessToken, long id) {
+        final String url = getBaseUrl() + "/locales/{id}";
+
+        try {
+            HttpResponse<Locale> response = Unirest.get(url).headers(getHeadersWithAuthorization(accessToken)).routeParam("id", Long.toString(id)).asObject(Locale.class);
             return response.getBody();
         } catch (Exception e) {
             throw new LingoException(e);
