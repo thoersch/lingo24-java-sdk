@@ -79,6 +79,17 @@ public class LingoClientTest extends TestCase {
     }
 
     @Test
+    public void shouldReturnProjectFiles() {
+        String accessToken = lingoClient.getAccessToken().getAccessToken();
+        List<Project> projects = lingoClient.getProjects(accessToken);
+        long projectId = projects.get(0).getId();
+
+        List<File> projectFiles = lingoClient.getProjectFiles(accessToken, projectId);
+        assertTrue(projectFiles.size() > 0);
+        System.out.println(projectFiles);
+    }
+
+    @Test
     public void shouldReturnDomainsForAuthenticatedUser() {
         String accessToken = lingoClient.getAccessToken().getAccessToken();
         System.out.println(lingoClient.getDomains(accessToken));

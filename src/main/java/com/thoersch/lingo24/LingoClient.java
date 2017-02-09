@@ -103,6 +103,35 @@ public class LingoClient {
         return get(accessToken, url, Project.class);
     }
 
+    public List<File> getProjectFiles(String accessToken, long projectId) {
+        final String url = String.format("%s/projects/%d/files", getBaseUrl(), projectId);
+        return getList(accessToken, url, File.class);
+    }
+
+    public File addFileToProject(String accessToken, long projectId, long fileId) {
+        final String url = String.format("%s/projects/%d/files/%d", getBaseUrl(), projectId, fileId);
+
+        try {
+            HttpResponse<File> response = Unirest.post(url).headers(getHeadersWithAuthorization(accessToken)).asObject(File.class);
+            return response.getBody();
+        } catch (Exception e) {
+            throw new LingoException(e);
+        }
+    }
+
+    public void deleteProjectFileById(String accessToken, long projectId, long fileId) {
+        final String url = String.format("%s/projects/%d/files/%d", getBaseUrl(), projectId, fileId);
+
+        try {
+            HttpResponse<JsonNode> response = Unirest.delete(url).headers(getHeadersWithAuthorization(accessToken)).asJson();
+            if(response.getStatus() >= 400) {
+                throw new LingoException(response.getBody().getObject().getString("error_description"));
+            }
+        } catch (Exception e) {
+            throw new LingoException(e);
+        }
+    }
+
     public List<Locale> getLocales(String accessToken) {
         final String url = getBaseUrl() + "/locales";
 
