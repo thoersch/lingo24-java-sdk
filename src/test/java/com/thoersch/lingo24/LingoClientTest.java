@@ -1,10 +1,14 @@
 package com.thoersch.lingo24;
 
+import com.thoersch.lingo24.representations.Locale;
+import com.thoersch.lingo24.representations.Project;
 import junit.framework.TestCase;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+
+import java.util.List;
 
 @RunWith(JUnit4.class)
 public class LingoClientTest extends TestCase {
@@ -13,7 +17,7 @@ public class LingoClientTest extends TestCase {
 
     @Before
     public void setup() {
-        lingoClient = new LingoClient("FILL", "ME", "IN", "PLEASE", true);
+        lingoClient = new LingoClient("", "", "", "", true);
     }
 
     @Test
@@ -53,7 +57,24 @@ public class LingoClientTest extends TestCase {
     @Test
     public void shouldReturnSpecificLocaleById() {
         String accessToken = lingoClient.getAccessToken().getAccessToken();
+        List<Locale> locales = lingoClient.getLocales(accessToken);
         long localeId = lingoClient.getLocales(accessToken).get(0).getId();
         System.out.println(lingoClient.getLocaleById(accessToken, localeId));
+    }
+
+    @Test
+    public void shouldReturnProjects() {
+        String accessToken = lingoClient.getAccessToken().getAccessToken();
+        List<Project> projects = lingoClient.getProjects(accessToken);
+        System.out.println(projects);
+    }
+
+    @Test
+    public void shouldReturnSpecificProjectById() {
+        String accessToken = lingoClient.getAccessToken().getAccessToken();
+        List<Project> projects = lingoClient.getProjects(accessToken);
+        Project project = projects.get(0);
+        long projectId = project.getId();
+        System.out.println(lingoClient.getProjectById(accessToken, projectId));
     }
 }

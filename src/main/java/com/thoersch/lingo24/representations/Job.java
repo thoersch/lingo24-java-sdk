@@ -1,5 +1,8 @@
 package com.thoersch.lingo24.representations;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Job {
     private Integer id;
     private JobStatus jobStatus;

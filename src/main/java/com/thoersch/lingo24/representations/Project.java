@@ -1,13 +1,15 @@
 package com.thoersch.lingo24.representations;
 
-import java.security.Timestamp;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Project {
     private Integer id;
     private String name;
     private Integer domainId;
     private ProjectStatus projectStatus;
-    private Timestamp created;
+    private Long created;
 
     public Project() { }
 
@@ -24,7 +26,7 @@ public class Project {
         private String name;
         private Integer domainId;
         private ProjectStatus projectStatus;
-        private Timestamp created;
+        private Long created;
 
         public Builder id(Integer val) {
             this.id = val;
@@ -46,7 +48,7 @@ public class Project {
             return this;
         }
 
-        public Builder created(Timestamp val) {
+        public Builder created(Long val) {
             this.created = val;
             return this;
         }
@@ -91,11 +93,11 @@ public class Project {
         this.projectStatus = projectStatus;
     }
 
-    public Timestamp getCreated() {
+    public Long getCreated() {
         return created;
     }
 
-    public void setCreated(Timestamp created) {
+    public void setCreated(Long created) {
         this.created = created;
     }
 

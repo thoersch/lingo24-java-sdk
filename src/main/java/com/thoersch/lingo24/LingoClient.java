@@ -1,16 +1,16 @@
 package com.thoersch.lingo24;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.ObjectMapper;
 import com.mashape.unirest.http.Unirest;
 import com.thoersch.lingo24.representations.*;
 import org.json.JSONArray;
+
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -96,13 +96,7 @@ public class LingoClient {
     public List<Service> getServices(String accessToken) {
         final String url = getBaseUrl() + "/services";
 
-        try {
-            HttpResponse<JsonNode> response = Unirest.get(url).headers(getHeadersWithAuthorization(accessToken)).asJson();
-            JSONArray jsonResponse = response.getBody().getObject().getJSONArray(CONTENT);
-            return getObjectMapper().readValue(jsonResponse.toString(), new TypeReference<ArrayList<Service>>() {});
-        } catch (Exception e) {
-            throw new LingoException(e);
-        }
+        return getList(accessToken, url, Service.class);
     }
 
     public Service getServiceById(String accessToken, long id) {
@@ -116,17 +110,22 @@ public class LingoClient {
         }
     }
 
+    public List<Project> getProjects(String accessToken) {
+        final String url = getBaseUrl() + "/projects";
+
+        return getList(accessToken, url, Project.class);
+    }
+
+    public Project getProjectById(String accessToken, long id) {
+        final String url = getBaseUrl() + "/projects/{id}";
+
+        return getById(accessToken, id, url, Project.class);
+    }
+
     public List<Locale> getLocales(String accessToken) {
         final String url = getBaseUrl() + "/locales";
 
-        try {
-            // better pagination controls
-            HttpResponse<JsonNode> response = Unirest.get(url).headers(getHeadersWithAuthorization(accessToken)).queryString("size", 100).asJson();
-            JSONArray jsonResponse = response.getBody().getObject().getJSONArray(CONTENT);
-            return getObjectMapper().readValue(jsonResponse.toString(), new TypeReference<ArrayList<Locale>>() {});
-        } catch (Exception e) {
-            throw new LingoException(e);
-        }
+        return getList(accessToken, url, Locale.class);
     }
 
     public Locale getLocaleById(String accessToken, long id) {
@@ -183,5 +182,27 @@ public class LingoClient {
                 }
             }
         });
+    }
+
+    private <T> T getById(String accessToken, long id, String url, Class clazz) {
+        try {
+            HttpResponse<T> response = Unirest.get(url).headers(getHeadersWithAuthorization(accessToken)).routeParam("id", Long.toString(id)).asObject(clazz);
+
+            return response.getBody();
+        } catch (Exception e) {
+            throw new LingoException(e);
+        }
+    }
+
+    private <T> List<T> getList(String accessToken, String url, Class clazz) {
+        try {
+            // better pagination controls
+            HttpResponse<JsonNode> response = Unirest.get(url).headers(getHeadersWithAuthorization(accessToken)).queryString("size", 100).asJson();
+            JSONArray jsonResponse = response.getBody().getObject().getJSONArray(CONTENT);
+            TypeFactory t = TypeFactory.defaultInstance();
+            return getObjectMapper().readValue(jsonResponse.toString(), t.constructCollectionType(ArrayList.class, clazz));
+        } catch (Exception e) {
+            throw new LingoException(e);
+        }
     }
 }
