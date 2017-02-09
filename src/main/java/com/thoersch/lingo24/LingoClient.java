@@ -132,6 +132,55 @@ public class LingoClient {
         }
     }
 
+    public List<Job> getProjectJobs(String accessToken, long projectId) {
+        final String url = String.format("%s/projects/%d/jobs", getBaseUrl(), projectId);
+        return getList(accessToken, url, Job.class);
+    }
+
+    public Job addJobToProject(String accessToken, long projectId, long jobId) {
+        final String url = String.format("%s/projects/%d/jobs/%d", getBaseUrl(), projectId, jobId);
+
+        try {
+            HttpResponse<Job> response = Unirest.post(url).headers(getHeadersWithAuthorization(accessToken)).asObject(Job.class);
+            return response.getBody();
+        } catch (Exception e) {
+            throw new LingoException(e);
+        }
+    }
+
+    public void deletJobFromProjectById(String accessToken, long projectId, long jobId) {
+        final String url = String.format("%s/projects/%d/jobs/%d", getBaseUrl(), projectId, jobId);
+
+        try {
+            HttpResponse<JsonNode> response = Unirest.delete(url).headers(getHeadersWithAuthorization(accessToken)).asJson();
+            if(response.getStatus() >= 400) {
+                throw new LingoException(response.getBody().getObject().getString("error_description"));
+            }
+        } catch (Exception e) {
+            throw new LingoException(e);
+        }
+    }
+
+    public Job getProjectJobById(String accessToken, long projectId, long jobId) {
+        final String url = String.format("%s/projects/%d/jobs/%d", getBaseUrl(), projectId, jobId);
+        return get(accessToken, url, Job.class);
+    }
+
+    public List<File> getProjectJobFiles(String accessToken, long projectId, long jobId) {
+        final String url = String.format("%s/projects/%d/jobs/%d/files", getBaseUrl(), projectId, jobId);
+        return getList(accessToken, url, File.class);
+    }
+
+    public JobMetrics getProjectJobMetrics(String accessToken, long projectId, long jobId) {
+        final String url = String.format("%s/projects/%d/jobs/%d/metrics", getBaseUrl(), projectId, jobId);
+        return get(accessToken, url, JobMetrics.class);
+    }
+
+    public Price getProjectJobPrice(String accessToken, long projectId, long jobId) {
+        final String url = String.format("%s/projects/%d/jobs/%d/price", getBaseUrl(), projectId, jobId);
+        return get(accessToken, url, Price.class);
+    }
+
     public List<Locale> getLocales(String accessToken) {
         final String url = getBaseUrl() + "/locales";
 
