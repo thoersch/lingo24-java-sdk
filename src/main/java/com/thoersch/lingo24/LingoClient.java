@@ -120,7 +120,7 @@ public class LingoClient {
         final String url = getBaseUrl() + "/locales";
 
         try {
-            // better pagination controls
+            // todo: better pagination controls
             HttpResponse<JsonNode> response = Unirest.get(url).headers(getHeadersWithAuthorization(accessToken)).queryString("size", 100).asJson();
             JSONArray jsonResponse = response.getBody().getObject().getJSONArray(CONTENT);
             return getObjectMapper().readValue(jsonResponse.toString(), new TypeReference<ArrayList<Locale>>() {});
@@ -134,6 +134,66 @@ public class LingoClient {
 
         try {
             HttpResponse<Locale> response = Unirest.get(url).headers(getHeadersWithAuthorization(accessToken)).routeParam("id", Long.toString(id)).asObject(Locale.class);
+            return response.getBody();
+        } catch (Exception e) {
+            throw new LingoException(e);
+        }
+    }
+
+    public List<Domain> getDomains(String accessToken) {
+        final String url = getBaseUrl() + "/domains";
+
+        try {
+            HttpResponse<JsonNode> response = Unirest.get(url).headers(getHeadersWithAuthorization(accessToken)).asJson();
+            JSONArray jsonResonse = response.getBody().getObject().getJSONArray(CONTENT);
+            return getObjectMapper().readValue(jsonResonse.toString(), new TypeReference<ArrayList<Domain>>() {});
+        } catch (Exception e) {
+            throw new LingoException(e);
+        }
+    }
+
+    public Domain getDomainById(String accessToken, long id) {
+        final String url = getBaseUrl() + "/domains/{id}";
+
+        try {
+            HttpResponse<Domain> response = Unirest.get(url).headers(getHeadersWithAuthorization(accessToken)).routeParam("id", Long.toString(id)).asObject(Domain.class);
+            return response.getBody();
+        } catch (Exception e) {
+            throw new LingoException(e);
+        }
+    }
+
+    public File createFile(String accessToken, String fileName) {
+        final String url = getBaseUrl() + "/files";
+
+        File payload = new File(0L, fileName, "SOURCE");
+
+        try {
+            HttpResponse<File> response = Unirest.post(url).headers(getHeadersWithAuthorization(accessToken)).body(payload).asObject(File.class);
+            return response.getBody();
+        } catch (Exception e) {
+            throw new LingoException(e);
+        }
+    }
+
+    public void deleteFileById(String accessToken, long id) {
+        final String url = getBaseUrl() + "/files/{id}";
+
+        try {
+            HttpResponse<JsonNode> response = Unirest.delete(url).headers(getHeadersWithAuthorization(accessToken)).routeParam("id", Long.toString(id)).asJson();
+            if(response.getStatus() >= 400) {
+                throw new LingoException(response.getBody().getObject().getString("error_description"));
+            }
+        } catch (Exception e) {
+            throw new LingoException(e);
+        }
+    }
+
+    public File getFileById(String accessToken, long id) {
+        final String url = getBaseUrl() + "/files/{id}";
+
+        try {
+            HttpResponse<File> response = Unirest.get(url).headers(getHeadersWithAuthorization(accessToken)).routeParam("id", Long.toString(id)).asObject(File.class);
             return response.getBody();
         } catch (Exception e) {
             throw new LingoException(e);
