@@ -56,22 +56,12 @@ public class LingoClient {
 
     public ApiInformation getApiInformation() {
         final String url = getBaseUrl() + "/";
-        try {
-            HttpResponse<ApiInformation> response = Unirest.get(url).headers(getHeaders()).asObject(ApiInformation.class);
-            return response.getBody();
-        } catch (Exception e) {
-            throw new LingoException(e);
-        }
+        return get(null, url, ApiInformation.class);
     }
 
     public ApiStatus getApiStatus() {
         final String url = getBaseUrl() + "/status";
-        try {
-            HttpResponse<ApiStatus> response = Unirest.get(url).headers(getHeaders()).asObject(ApiStatus.class);
-            return response.getBody();
-        } catch (Exception e) {
-            throw new LingoException(e);
-        }
+        return get(null, url, ApiStatus.class);
     }
 
     public OauthToken getAccessToken() {
@@ -95,31 +85,22 @@ public class LingoClient {
 
     public List<Service> getServices(String accessToken) {
         final String url = getBaseUrl() + "/services";
-
         return getList(accessToken, url, Service.class);
     }
 
     public Service getServiceById(String accessToken, long id) {
-        final String url = getBaseUrl() + "/services/{id}";
-
-        try {
-            HttpResponse<Service> response = Unirest.get(url).headers(getHeadersWithAuthorization(accessToken)).routeParam("id", Long.toString(id)).asObject(Service.class);
-            return response.getBody();
-        } catch (Exception e) {
-            throw new LingoException(e);
-        }
+        final String url = getBaseUrl() + "/services/" + id;
+        return get(accessToken, url, Service.class);
     }
 
     public List<Project> getProjects(String accessToken) {
         final String url = getBaseUrl() + "/projects";
-
         return getList(accessToken, url, Project.class);
     }
 
     public Project getProjectById(String accessToken, long id) {
-        final String url = getBaseUrl() + "/projects/{id}";
-
-        return getById(accessToken, id, url, Project.class);
+        final String url = getBaseUrl() + "/projects/" + id;
+        return get(accessToken, url, Project.class);
     }
 
     public List<Locale> getLocales(String accessToken) {
@@ -129,14 +110,49 @@ public class LingoClient {
     }
 
     public Locale getLocaleById(String accessToken, long id) {
-        final String url = getBaseUrl() + "/locales/{id}";
+        final String url = getBaseUrl() + "/locales/" + id;
+        return get(accessToken, url, Locale.class);
+    }
+
+    public List<Domain> getDomains(String accessToken) {
+        final String url = getBaseUrl() + "/domains";
+        return getList(accessToken, url, Domain.class);
+    }
+
+    public Domain getDomainById(String accessToken, long id) {
+        final String url = getBaseUrl() + "/domains/" + id;
+        return get(accessToken, url, Domain.class);
+    }
+
+    public File createFile(String accessToken, String fileName) {
+        final String url = getBaseUrl() + "/files";
+
+        File payload = new File(0L, fileName, FileType.SOURCE);
 
         try {
-            HttpResponse<Locale> response = Unirest.get(url).headers(getHeadersWithAuthorization(accessToken)).routeParam("id", Long.toString(id)).asObject(Locale.class);
+            HttpResponse<File> response = Unirest.post(url).headers(getHeadersWithAuthorization(accessToken)).body(payload).asObject(File.class);
             return response.getBody();
         } catch (Exception e) {
             throw new LingoException(e);
         }
+    }
+
+    public void deleteFileById(String accessToken, long id) {
+        final String url = getBaseUrl() + "/files/" + id;
+
+        try {
+            HttpResponse<JsonNode> response = Unirest.delete(url).headers(getHeadersWithAuthorization(accessToken)).asJson();
+            if(response.getStatus() >= 400) {
+                throw new LingoException(response.getBody().getObject().getString("error_description"));
+            }
+        } catch (Exception e) {
+            throw new LingoException(e);
+        }
+    }
+
+    public File getFileById(String accessToken, long id) {
+        final String url = getBaseUrl() + "/files/" + id;
+        return get(accessToken, url, File.class);
     }
 
     private String getBaseUrl() {
@@ -184,9 +200,9 @@ public class LingoClient {
         });
     }
 
-    private <T> T getById(String accessToken, long id, String url, Class clazz) {
+    private <T> T get(String accessToken, String url, Class clazz) {
         try {
-            HttpResponse<T> response = Unirest.get(url).headers(getHeadersWithAuthorization(accessToken)).routeParam("id", Long.toString(id)).asObject(clazz);
+            HttpResponse<T> response = Unirest.get(url).headers(getHeadersWithAuthorization(accessToken)).asObject(clazz);
 
             return response.getBody();
         } catch (Exception e) {

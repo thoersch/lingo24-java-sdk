@@ -2,6 +2,7 @@ package com.thoersch.lingo24;
 
 import com.thoersch.lingo24.representations.Locale;
 import com.thoersch.lingo24.representations.Project;
+import com.thoersch.lingo24.representations.File;
 import junit.framework.TestCase;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,7 +18,7 @@ public class LingoClientTest extends TestCase {
 
     @Before
     public void setup() {
-        lingoClient = new LingoClient("", "", "", "", true);
+        lingoClient = new LingoClient("17f46572-26b5-4c03-9082-61d88af073ff", "http://localhost", "a782c71a", "a608178e93175ddf19fa67a2f202e97b", true);
     }
 
     @Test
@@ -58,7 +59,7 @@ public class LingoClientTest extends TestCase {
     public void shouldReturnSpecificLocaleById() {
         String accessToken = lingoClient.getAccessToken().getAccessToken();
         List<Locale> locales = lingoClient.getLocales(accessToken);
-        long localeId = lingoClient.getLocales(accessToken).get(0).getId();
+        long localeId = locales.get(0).getId();
         System.out.println(lingoClient.getLocaleById(accessToken, localeId));
     }
 
@@ -73,8 +74,38 @@ public class LingoClientTest extends TestCase {
     public void shouldReturnSpecificProjectById() {
         String accessToken = lingoClient.getAccessToken().getAccessToken();
         List<Project> projects = lingoClient.getProjects(accessToken);
-        Project project = projects.get(0);
-        long projectId = project.getId();
+        long projectId = projects.get(0).getId();
         System.out.println(lingoClient.getProjectById(accessToken, projectId));
+    }
+
+    @Test
+    public void shouldReturnDomainsForAuthenticatedUser() {
+        String accessToken = lingoClient.getAccessToken().getAccessToken();
+        System.out.println(lingoClient.getDomains(accessToken));
+    }
+
+    @Test
+    public void shouldReturnSpecificDomainById() {
+        String accessToken = lingoClient.getAccessToken().getAccessToken();
+        long domainId = lingoClient.getDomains(accessToken).get(0).getId();
+        System.out.println(lingoClient.getDomainById(accessToken, domainId));
+    }
+
+    @Test
+    public void shouldCreateAndDeleteFile() {
+        String accessToken = lingoClient.getAccessToken().getAccessToken();
+        File file = lingoClient.createFile(accessToken, "API - TEST FILE");
+
+        assertNotNull(file.getId());
+
+        file = lingoClient.getFileById(accessToken, file.getId());
+
+        assertNotNull(file.getId());
+
+        try {
+            lingoClient.deleteFileById(accessToken, file.getId());
+        } catch (Exception e) {
+            fail();
+        }
     }
 }
