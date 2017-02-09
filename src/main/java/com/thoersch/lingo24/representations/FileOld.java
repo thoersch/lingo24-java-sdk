@@ -3,14 +3,14 @@ package com.thoersch.lingo24.representations;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class File {
+public class FileOld {
     Integer id;
     String name;
     FileType type;
 
-    public File() { }
+    public FileOld() { }
 
-    public File (Integer id, String name, FileType type) {
+    public FileOld(Integer id, String name, FileType type) {
         this.id = id;
         this.name = name;
         this.type = type;
@@ -43,9 +43,9 @@ public class File {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof File)) return false;
+        if (!(o instanceof FileOld)) return false;
 
-        File file = (File) o;
+        FileOld file = (FileOld) o;
 
         if (id != null ? !id.equals(file.id) : file.id != null) return false;
         if (name != null ? !name.equals(file.name) : file.name != null) return false;
