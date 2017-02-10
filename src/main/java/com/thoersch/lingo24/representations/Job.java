@@ -4,16 +4,16 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Job {
-    private Integer id;
+    private Long id;
     private JobStatus jobStatus;
-    private Integer projectId;
-    private Integer serviceId;
+    private Long projectId;
+    private Long serviceId;
     private String sourceLocale;
-    private Integer sourceLocalId;
+    private Long sourceLocalId;
     private String targetLocale;
-    private Integer targetLocaleId;
-    private Integer sourceFileId;
-    private Integer targetFileId;
+    private Long targetLocaleId;
+    private Long sourceFileId;
+    private Long targetFileId;
 
     public Job() { }
 
@@ -30,19 +30,32 @@ public class Job {
         this.targetFileId = builder.targetFileId;
     }
 
-    public static class Builder {
-        private Integer id;
-        private JobStatus jobStatus;
-        private Integer projectId;
-        private Integer serviceId;
-        private String sourceLocale;
-        private Integer sourceLocalId;
-        private String targetLocale;
-        private Integer targetLocaleId;
-        private Integer sourceFileId;
-        private Integer targetFileId;
+    public Job(Job job) {
+        this.id = job.id;
+        this.jobStatus = job.jobStatus;
+        this.projectId = job.projectId;
+        this.serviceId = job.serviceId;
+        this.sourceLocale = job.sourceLocale;
+        this.sourceLocalId = job.sourceLocalId;
+        this.targetLocale = job.targetLocale;
+        this.targetLocaleId = job.targetLocaleId;
+        this.sourceFileId = job.sourceFileId;
+        this.targetFileId = job.targetFileId;
+    }
 
-        public Builder id(Integer val) {
+    public static class Builder {
+        private Long id;
+        private JobStatus jobStatus;
+        private Long projectId;
+        private Long serviceId;
+        private String sourceLocale;
+        private Long sourceLocalId;
+        private String targetLocale;
+        private Long targetLocaleId;
+        private Long sourceFileId;
+        private Long targetFileId;
+
+        public Builder id(Long val) {
             this.id = val;
             return this;
         }
@@ -52,12 +65,12 @@ public class Job {
             return this;
         }
 
-        public Builder projectId(Integer val) {
+        public Builder projectId(Long val) {
             this.projectId = val;
             return this;
         }
 
-        public Builder serviceId(Integer val) {
+        public Builder serviceId(Long val) {
             this.serviceId = val;
             return this;
         }
@@ -67,7 +80,7 @@ public class Job {
             return this;
         }
 
-        public Builder sourceLocalId(Integer val) {
+        public Builder sourceLocalId(Long val) {
             this.sourceLocalId = val;
             return this;
         }
@@ -77,17 +90,17 @@ public class Job {
             return this;
         }
 
-        public Builder targetLocalId(Integer val) {
+        public Builder targetLocalId(Long val) {
             this.targetLocaleId = val;
             return this;
         }
 
-        public Builder sourceFileId(Integer val) {
+        public Builder sourceFileId(Long val) {
             this.sourceFileId = val;
             return this;
         }
 
-        public Builder targetFileId(Integer val) {
+        public Builder targetFileId(Long val) {
             this.targetFileId = val;
             return this;
         }
@@ -98,11 +111,11 @@ public class Job {
         }
     }
 
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -114,19 +127,19 @@ public class Job {
         this.jobStatus = jobStatus;
     }
 
-    public int getProjectId() {
+    public Long getProjectId() {
         return projectId;
     }
 
-    public void setProjectId(int projectId) {
+    public void setProjectId(Long projectId) {
         this.projectId = projectId;
     }
 
-    public int getServiceId() {
+    public Long getServiceId() {
         return serviceId;
     }
 
-    public void setServiceId(int serviceId) {
+    public void setServiceId(Long serviceId) {
         this.serviceId = serviceId;
     }
 
@@ -138,11 +151,11 @@ public class Job {
         this.sourceLocale = sourceLocale;
     }
 
-    public int getSourceLocalId() {
+    public Long getSourceLocalId() {
         return sourceLocalId;
     }
 
-    public void setSourceLocalId(int sourceLocalId) {
+    public void setSourceLocalId(Long sourceLocalId) {
         this.sourceLocalId = sourceLocalId;
     }
 
@@ -154,27 +167,27 @@ public class Job {
         this.targetLocale = targetLocale;
     }
 
-    public int getTargetLocaleId() {
+    public Long getTargetLocaleId() {
         return targetLocaleId;
     }
 
-    public void setTargetLocaleId(int targetLocaleId) {
+    public void setTargetLocaleId(Long targetLocaleId) {
         this.targetLocaleId = targetLocaleId;
     }
 
-    public int getSourceFileId() {
+    public Long getSourceFileId() {
         return sourceFileId;
     }
 
-    public void setSourceFileId(int sourceFileId) {
+    public void setSourceFileId(Long sourceFileId) {
         this.sourceFileId = sourceFileId;
     }
 
-    public int getTargetFileId() {
+    public Long getTargetFileId() {
         return targetFileId;
     }
 
-    public void setTargetFileId(int targetFileId) {
+    public void setTargetFileId(Long targetFileId) {
         this.targetFileId = targetFileId;
     }
 

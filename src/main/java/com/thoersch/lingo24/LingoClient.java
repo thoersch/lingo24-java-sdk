@@ -2,6 +2,7 @@ package com.thoersch.lingo24;
 
 import com.thoersch.lingo24.representations.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -438,5 +439,54 @@ public class LingoClient extends BaseClient {
     public Price getProjectJobPrice(String accessToken, long projectId, long jobId) {
         final String url = String.format("/projects/%d/jobs/%d/price", projectId, jobId);
         return get(accessToken, url, Price.class);
+    }
+
+
+    public ProjectVM createTranslationJob(String accessToken, ProjectVM project) {
+        if (project == null) {
+            return null;
+        }
+
+        Project createdProject = project;
+        if (project.getId() == null) {
+            createdProject = this.createProject(accessToken, project);
+        }
+
+        List<Job> createdJobs = new ArrayList<>();
+        for(JobVM job : project.getJobs()) {
+
+            FileVM file = job.getFile();
+            File createdFile = file;
+            if (file.getId() == null || file.getId() <= 0) {
+                createdFile = this.createFile(accessToken, file.getName());
+
+                this.updateFileContent(accessToken, createdFile.getId(), file.getContent());
+                this.addFileToProject(accessToken, project.getId(), createdFile);
+            }
+
+            Job createdJob = job;
+            if (job.getId() == null || job.getId() <= 0) {
+                job.setSourceFileId(createdFile.getId());
+                job.setSourceLocalId(LocaleEnum.enUS.getLocaleId());
+                job.setTargetLocaleId(LocaleEnum.getFromCode(job.getLanguageCode()).getLocaleId());
+
+                createdJob = this.addJobToProject(accessToken, createdProject.getId(), job);
+                createdJobs.add(createdJob);
+            }
+        }
+
+        return project;
+    }
+
+    private Locale getLocaleFromLanguageAndCountry(final String language, final String country, List<Locale> locales) {
+        Locale locale = locales.stream().filter(l -> l.getLanguage().toLowerCase().equals(language.toLowerCase())
+                && l.getCountry().toLowerCase().equals(country.toLowerCase()))
+                .findFirst().orElse(null);
+
+        if (locale == null) {
+            throw new LingoException("Locale doesn't exist.");
+        }
+
+        return locale;
     }
 }

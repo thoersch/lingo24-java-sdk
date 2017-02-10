@@ -21,6 +21,14 @@ public class Project {
         this.created = builder.created;
     }
 
+    public Project(Project project) {
+        this.id = project.id;
+        this.name = project.name;
+        this.domainId = project.domainId;
+        this.projectStatus = project.projectStatus;
+        this.created = project.created;
+    }
+
     public static class Builder {
         private Integer id;
         private String name;
