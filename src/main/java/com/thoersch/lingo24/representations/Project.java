@@ -53,19 +53,16 @@ public class Project {
             return this;
         }
 
-
-
-
         public Project build() {
             return new Project(this);
         }
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -77,11 +74,11 @@ public class Project {
         this.name = name;
     }
 
-    public int getDomainId() {
+    public Integer getDomainId() {
         return domainId;
     }
 
-    public void setDomainId(int domainId) {
+    public void setDomainId(Integer domainId) {
         this.domainId = domainId;
     }
 

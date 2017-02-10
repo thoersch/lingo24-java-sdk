@@ -1,26 +1,13 @@
 package com.thoersch.lingo24;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import com.fasterxml.jackson.databind.type.TypeFactory;
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.JsonNode;
-import com.mashape.unirest.http.ObjectMapper;
-import com.mashape.unirest.http.Unirest;
 import com.thoersch.lingo24.representations.*;
-import org.json.JSONArray;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class LingoClient {
+public class LingoClient extends BaseClient {
     private static final Double VERSION = 1.0;
-
-    private static final String USER_AGENT = "User-Agent";
-    private static final String USER_AGENT_VALUE_FORMAT = "LingoClient - Java Version: %f";
     private static final String BASE_SANDBOX_URL = "https://api-demo.lingo24.com/docs/v1";
     private static final String BASE_URL = "https://api.lingo24.com/docs/v1";
     private static final String CLIENT_ID = "client_id";
@@ -28,24 +15,22 @@ public class LingoClient {
     private static final String GRANT_TYPE = "grant_type";
     private static final String REDIRECT_URI = "redirect_uri";
     private static final String REFRESH_TOKEN = "refresh_token";
-    private static final String CONTENT_TYPE = "Content-Type";
-    private static final String APPLICATION_JSON = "application/json";
-    private static final String AUTHORIZATION_KEY = "Authorization";
-    private static final String AUTHORIZATION_VALUE_FORMAT = "Bearer %s";
-    private static final String CONTENT = "content";
 
     private final String refreshToken;
     private final String clientId;
     private final String clientSecret;
     private final String redirectUri;
     private final boolean isSandbox;
+    private final PagingInput defaultPagingInput;
 
-    public LingoClient(String refreshToken, String redirectUri, String clientId, String clientSecret, boolean isSandbox) {
-        this.refreshToken = refreshToken;
-        this.redirectUri = redirectUri;
-        this.clientId = clientId;
-        this.clientSecret = clientSecret;
-        this.isSandbox = isSandbox;
+    public LingoClient(LingoInfo lingoInfo) {
+        super(VERSION);
+        this.refreshToken = lingoInfo.getRefreshToken();
+        this.redirectUri = lingoInfo.getRedirectUri();
+        this.clientId = lingoInfo.getClientId();
+        this.clientSecret = lingoInfo.getClientSecret();
+        this.isSandbox = lingoInfo.isSandbox();
+        this.defaultPagingInput = getDefaultPagingInput();
 
         if(refreshToken == null || redirectUri == null || clientId == null || clientSecret == null) {
             throw new LingoException("All configuration values required.");
@@ -54,18 +39,35 @@ public class LingoClient {
         initializeHttp();
     }
 
+    @Override
+    protected String getBaseUrl() {
+        return isSandbox ? BASE_SANDBOX_URL : BASE_URL;
+    }
+
+    /**
+     * Returns information on the API.
+     * @return
+     */
     public ApiInformation getApiInformation() {
-        final String url = getBaseUrl() + "/";
+        final String url = "/";
         return get(null, url, ApiInformation.class);
     }
 
+    /**
+     * Returns status information for the API.
+     * @return
+     */
     public ApiStatus getApiStatus() {
-        final String url = getBaseUrl() + "/status";
+        final String url = "/status";
         return get(null, url, ApiStatus.class);
     }
 
+    /**
+     * Get an oauth2 access token for interacting with the API.
+     * @return
+     */
     public OauthToken getAccessToken() {
-        final String url = getBaseUrl() + "/oauth2/access";
+        final String url = "/oauth2/access";
         final Map<String, Object> queryStrings = new HashMap<String, Object>() {{
             put(CLIENT_ID, clientId);
             put(CLIENT_SECRET, clientSecret);
@@ -74,229 +76,367 @@ public class LingoClient {
             put(REFRESH_TOKEN, refreshToken);
         }};
 
-        try {
-            HttpResponse<OauthToken> response = Unirest.post(url).queryString(queryStrings).headers(getHeaders()).asObject(OauthToken.class);
-            OauthToken token = response.getBody();
-            return token;
-        } catch (Exception e) {
-            throw new LingoException(e);
-        }
+        return create(null, url, null, queryStrings, OauthToken.class);
     }
 
+    /**
+     * Returns a page of Lingo24 services available for translation jobs.
+     * @param accessToken
+     * @return
+     */
     public List<Service> getServices(String accessToken) {
-        final String url = getBaseUrl() + "/services";
-        return getList(accessToken, url, Service.class);
+        return getServices(accessToken, defaultPagingInput);
     }
 
-    public Service getServiceById(String accessToken, long id) {
-        final String url = getBaseUrl() + "/services/" + id;
+    /**
+     * Returns a page of Lingo24 services available for translation jobs.
+     * @param accessToken
+     * @param pagingInput
+     * @return
+     */
+    public List<Service> getServices(String accessToken, PagingInput pagingInput) {
+        final String url = "/services";
+        return getList(accessToken, url, pagingInput, Service.class);
+    }
+
+    /**
+     * Returns a single Lingo24 service.
+     * @param accessToken
+     * @param serviceId
+     * @return
+     */
+    public Service getServiceById(String accessToken, long serviceId) {
+        final String url = String.format("/services/%d", serviceId);
         return get(accessToken, url, Service.class);
     }
 
-    public List<Project> getProjects(String accessToken) {
-        final String url = getBaseUrl() + "/projects";
-        return getList(accessToken, url, Project.class);
-    }
-
-    public Project getProjectById(String accessToken, long id) {
-        final String url = getBaseUrl() + "/projects/" + id;
-        return get(accessToken, url, Project.class);
-    }
-
-    public List<File> getProjectFiles(String accessToken, long projectId) {
-        final String url = String.format("%s/projects/%d/files", getBaseUrl(), projectId);
-        return getList(accessToken, url, File.class);
-    }
-
-    public File addFileToProject(String accessToken, long projectId, long fileId) {
-        final String url = String.format("%s/projects/%d/files/%d", getBaseUrl(), projectId, fileId);
-
-        try {
-            HttpResponse<File> response = Unirest.post(url).headers(getHeadersWithAuthorization(accessToken)).asObject(File.class);
-            return response.getBody();
-        } catch (Exception e) {
-            throw new LingoException(e);
-        }
-    }
-
-    public void deleteProjectFileById(String accessToken, long projectId, long fileId) {
-        final String url = String.format("%s/projects/%d/files/%d", getBaseUrl(), projectId, fileId);
-
-        try {
-            HttpResponse<JsonNode> response = Unirest.delete(url).headers(getHeadersWithAuthorization(accessToken)).asJson();
-            if(response.getStatus() >= 400) {
-                throw new LingoException(response.getBody().getObject().getString("error_description"));
-            }
-        } catch (Exception e) {
-            throw new LingoException(e);
-        }
-    }
-
-    public List<Job> getProjectJobs(String accessToken, long projectId) {
-        final String url = String.format("%s/projects/%d/jobs", getBaseUrl(), projectId);
-        return getList(accessToken, url, Job.class);
-    }
-
-    public Job addJobToProject(String accessToken, long projectId, long jobId) {
-        final String url = String.format("%s/projects/%d/jobs/%d", getBaseUrl(), projectId, jobId);
-
-        try {
-            HttpResponse<Job> response = Unirest.post(url).headers(getHeadersWithAuthorization(accessToken)).asObject(Job.class);
-            return response.getBody();
-        } catch (Exception e) {
-            throw new LingoException(e);
-        }
-    }
-
-    public void deletJobFromProjectById(String accessToken, long projectId, long jobId) {
-        final String url = String.format("%s/projects/%d/jobs/%d", getBaseUrl(), projectId, jobId);
-
-        try {
-            HttpResponse<JsonNode> response = Unirest.delete(url).headers(getHeadersWithAuthorization(accessToken)).asJson();
-            if(response.getStatus() >= 400) {
-                throw new LingoException(response.getBody().getObject().getString("error_description"));
-            }
-        } catch (Exception e) {
-            throw new LingoException(e);
-        }
-    }
-
-    public Job getProjectJobById(String accessToken, long projectId, long jobId) {
-        final String url = String.format("%s/projects/%d/jobs/%d", getBaseUrl(), projectId, jobId);
-        return get(accessToken, url, Job.class);
-    }
-
-    public List<File> getProjectJobFiles(String accessToken, long projectId, long jobId) {
-        final String url = String.format("%s/projects/%d/jobs/%d/files", getBaseUrl(), projectId, jobId);
-        return getList(accessToken, url, File.class);
-    }
-
-    public JobMetrics getProjectJobMetrics(String accessToken, long projectId, long jobId) {
-        final String url = String.format("%s/projects/%d/jobs/%d/metrics", getBaseUrl(), projectId, jobId);
-        return get(accessToken, url, JobMetrics.class);
-    }
-
-    public Price getProjectJobPrice(String accessToken, long projectId, long jobId) {
-        final String url = String.format("%s/projects/%d/jobs/%d/price", getBaseUrl(), projectId, jobId);
-        return get(accessToken, url, Price.class);
-    }
-
+    /**
+     * Returns a page of Lingo24 locales available for translation jobs.
+     * @param accessToken
+     * @return
+     */
     public List<Locale> getLocales(String accessToken) {
-        final String url = getBaseUrl() + "/locales";
-
-        return getList(accessToken, url, Locale.class);
+        return getLocales(accessToken, defaultPagingInput);
     }
 
-    public Locale getLocaleById(String accessToken, long id) {
-        final String url = getBaseUrl() + "/locales/" + id;
+    /**
+     * Returns a page of Lingo24 locales available for translation jobs.
+     * @param accessToken
+     * @param pagingInput
+     * @return
+     */
+    public List<Locale> getLocales(String accessToken, PagingInput pagingInput) {
+        final String url = "/locales";
+
+        return getList(accessToken, url, pagingInput, Locale.class);
+    }
+
+    public Locale getLocaleById(String accessToken, long localeId) {
+        final String url = String.format("/locales/%d", localeId);
         return get(accessToken, url, Locale.class);
     }
 
+    /**
+     * Returns a page of Lingo24 domains available for translation jobs.
+     * @param accessToken
+     * @return
+     */
     public List<Domain> getDomains(String accessToken) {
-        final String url = getBaseUrl() + "/domains";
-        return getList(accessToken, url, Domain.class);
+        return getDomains(accessToken, defaultPagingInput);
     }
 
-    public Domain getDomainById(String accessToken, long id) {
-        final String url = getBaseUrl() + "/domains/" + id;
+    /**
+     * Returns a page of Lingo24 domains available for translation jobs.
+     * @param accessToken
+     * @param pagingInput
+     * @return
+     */
+    public List<Domain> getDomains(String accessToken, PagingInput pagingInput) {
+        final String url = "/domains";
+        return getList(accessToken, url, pagingInput, Domain.class);
+    }
+
+    /**
+     * Returns a single Lingo24 domain.
+     * @param accessToken
+     * @param domainId
+     * @return
+     */
+    public Domain getDomainById(String accessToken, long domainId) {
+        final String url = String.format("/domains/%d", domainId);
         return get(accessToken, url, Domain.class);
     }
 
+    /**
+     * Create a new file.
+     * @param accessToken
+     * @param fileName
+     * @return
+     */
     public File createFile(String accessToken, String fileName) {
-        final String url = getBaseUrl() + "/files";
-
+        final String url = "/files";
         File payload = new File(0L, fileName, FileType.SOURCE);
-
-        try {
-            HttpResponse<File> response = Unirest.post(url).headers(getHeadersWithAuthorization(accessToken)).body(payload).asObject(File.class);
-            return response.getBody();
-        } catch (Exception e) {
-            throw new LingoException(e);
-        }
+        return create(accessToken, url, payload, File.class);
     }
 
-    public void deleteFileById(String accessToken, long id) {
-        final String url = getBaseUrl() + "/files/" + id;
-
-        try {
-            HttpResponse<JsonNode> response = Unirest.delete(url).headers(getHeadersWithAuthorization(accessToken)).asJson();
-            if(response.getStatus() >= 400) {
-                throw new LingoException(response.getBody().getObject().getString("error_description"));
-            }
-        } catch (Exception e) {
-            throw new LingoException(e);
-        }
-    }
-
-    public File getFileById(String accessToken, long id) {
-        final String url = getBaseUrl() + "/files/" + id;
+    /**
+     * Returns a file's metadata.
+     * @param accessToken
+     * @param fileId
+     * @return
+     */
+    public File getFileById(String accessToken, long fileId) {
+        final String url = String.format("/files/%d", fileId);
         return get(accessToken, url, File.class);
     }
 
-    private String getBaseUrl() {
-        return isSandbox ? BASE_SANDBOX_URL : BASE_URL;
+    /**
+     * Delete a file.
+     * @param accessToken
+     * @param fileId
+     */
+    public void deleteFileById(String accessToken, long fileId) {
+        final String url = String.format("/files/%d", fileId);
+        delete(accessToken, url);
     }
 
-    private Map<String, String> getHeaders() {
-        return new HashMap<String, String>() {{
-            put(CONTENT_TYPE, APPLICATION_JSON);
-            put(USER_AGENT, String.format(USER_AGENT_VALUE_FORMAT, VERSION));
-        }};
+    /**
+     * Returns a file's content.
+     * @param accessToken
+     * @param fileId
+     * @return
+     */
+    public String getFileContent(String accessToken, long fileId) {
+        final String url = String.format("/files/%d/content", fileId);
+        return get(accessToken, url, String.class);
     }
 
-    private Map<String, String> getHeadersWithAuthorization(String accessToken) {
-        Map<String, String> defaultHeaders = getHeaders();
-        defaultHeaders.put(AUTHORIZATION_KEY, String.format(AUTHORIZATION_VALUE_FORMAT, accessToken));
-        return defaultHeaders;
+    /**
+     * Upload a file's content.
+     * @param accessToken
+     * @param fileId
+     * @param content
+     * @return
+     */
+    public String updateFileContent(String accessToken, long fileId, String content) {
+        final String url = String.format("/files/%d/content", fileId);
+        return update(accessToken, url, content, String.class);
     }
 
-    private com.fasterxml.jackson.databind.ObjectMapper getObjectMapper() {
-        com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-        mapper.setPropertyNamingStrategy(PropertyNamingStrategy.CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES);
-        return mapper;
+    /**
+     * Returns a page of projects.
+     * @param accessToken
+     * @return
+     */
+    public List<Project> getProjects(String accessToken) {
+        return getProjects(accessToken, defaultPagingInput);
     }
 
-    private void initializeHttp() {
-        Unirest.setObjectMapper(new ObjectMapper() {
-
-            public <T> T readValue(String value, Class<T> valueType) {
-                try {
-                    return getObjectMapper().readValue(value, valueType);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-
-            @Override
-            public String writeValue(Object value) {
-                try {
-                    return getObjectMapper().writeValueAsString(value);
-                } catch (JsonProcessingException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        });
+    /**
+     * Returns a page of projects.
+     * @param accessToken
+     * @param pagingInput
+     * @return
+     */
+    public List<Project> getProjects(String accessToken, PagingInput pagingInput) {
+        final String url = "/projects";
+        return getList(accessToken, url, pagingInput, Project.class);
     }
 
-    private <T> T get(String accessToken, String url, Class clazz) {
-        try {
-            HttpResponse<T> response = Unirest.get(url).headers(getHeadersWithAuthorization(accessToken)).asObject(clazz);
+    /**
+     * Create a new project.
+     * @param accessToken
+     * @param project
+     * @return
+     */
+    public Project createProject(String accessToken, Project project) {
+        final String url = "/projects";
+        return create(accessToken, url, project, Project.class);
+    }
 
-            return response.getBody();
-        } catch (Exception e) {
-            throw new LingoException(e);
+    /**
+     * Returns a single Lingo24 project.
+     * @param accessToken
+     * @param projectId
+     * @return
+     */
+    public Project getProjectById(String accessToken, long projectId) {
+        final String url = String.format("/projects/%d", projectId);
+        return get(accessToken, url, Project.class);
+    }
+
+    /**
+     * Cancel a created or quoted project.
+     * @param accessToken
+     * @param projectId
+     */
+    public void deleteProjectById(String accessToken, long projectId) {
+        final String url = String.format("/projects/%d", projectId);
+        delete(accessToken, url);
+    }
+
+    /**
+     * Update a project.
+     * @param accessToken
+     * @param projectId
+     * @param project
+     * @return
+     */
+    public Project updateProjectById(String accessToken, long projectId, Project project) {
+        if (projectId != project.getId()) {
+            throw new LingoException("Provided project and projectId are different.");
         }
+
+        final String url = String.format("/projects/%d", projectId);
+        return update(accessToken, url, project, Project.class);
     }
 
-    private <T> List<T> getList(String accessToken, String url, Class clazz) {
-        try {
-            // better pagination controls
-            HttpResponse<JsonNode> response = Unirest.get(url).headers(getHeadersWithAuthorization(accessToken)).queryString("size", 100).asJson();
-            JSONArray jsonResponse = response.getBody().getObject().getJSONArray(CONTENT);
-            TypeFactory t = TypeFactory.defaultInstance();
-            return getObjectMapper().readValue(jsonResponse.toString(), t.constructCollectionType(ArrayList.class, clazz));
-        } catch (Exception e) {
-            throw new LingoException(e);
-        }
+    /**
+     * Returns a page of files associated with a project.
+     * @param accessToken
+     * @param projectId
+     * @return
+     */
+    public List<File> getProjectFiles(String accessToken, long projectId) {
+        return getProjectFiles(accessToken, projectId, defaultPagingInput);
+    }
+
+    /**
+     * Returns a page of files associated with a project.
+     * @param accessToken
+     * @param projectId
+     * @param pagingInput
+     * @return
+     */
+    public List<File> getProjectFiles(String accessToken, long projectId, PagingInput pagingInput) {
+        final String url = String.format("/projects/%d/files", projectId);
+        return getList(accessToken, url, pagingInput, File.class);
+    }
+
+    /**
+     * Link an existing file to a project.
+     * @param accessToken
+     * @param projectId
+     * @param file
+     */
+    public void addFileToProject(String accessToken, long projectId, File file) {
+        final String url = String.format("/projects/%d/files", projectId);
+        create(accessToken, url, file);
+    }
+
+    /**
+     * Removes a file from a project.
+     * @param accessToken
+     * @param projectId
+     * @param fileId
+     */
+    public void deleteProjectFileById(String accessToken, long projectId, long fileId) {
+        final String url = String.format("/projects/%d/files/%d", projectId, fileId);
+        delete(accessToken, url);
+    }
+
+    /**
+     * Returns a page of jobs for a Lingo24 project.
+     * @param accessToken
+     * @param projectId
+     * @return
+     */
+    public List<Job> getJobsForProject(String accessToken, long projectId) {
+        return getJobsForProject(accessToken, projectId, defaultPagingInput);
+    }
+
+    /**
+     * Returns a page of jobs for a Lingo24 project.
+     * @param accessToken
+     * @param projectId
+     * @param pagingInput
+     * @return
+     */
+    public List<Job> getJobsForProject(String accessToken, long projectId, PagingInput pagingInput) {
+        final String url = String.format("/projects/%d/jobs", projectId);
+        return getList(accessToken, url, pagingInput, Job.class);
+    }
+
+    /**
+     * Create a new job.
+     * @param accessToken
+     * @param projectId
+     * @param job
+     * @return
+     */
+    public Job addJobToProject(String accessToken, long projectId, Job job) {
+        final String url = String.format("/projects/%d/jobs", projectId);
+        return create(accessToken, url, job, Job.class);
+    }
+
+    /**
+     * Delete a job.
+     * @param accessToken
+     * @param projectId
+     * @param jobId
+     */
+    public void deletJobById(String accessToken, long projectId, long jobId) {
+        final String url = String.format("/projects/%d/jobs/%d", projectId, jobId);
+        delete(accessToken, url);
+    }
+
+    /**
+     * Returns a single Lingo24 job.
+     * @param accessToken
+     * @param projectId
+     * @param jobId
+     * @return
+     */
+    public Job getJobById(String accessToken, long projectId, long jobId) {
+        final String url = String.format("/projects/%d/jobs/%d", projectId, jobId);
+        return get(accessToken, url, Job.class);
+    }
+
+    /**
+     * Returns a page of files associated with a job.
+     * @param accessToken
+     * @param projectId
+     * @param jobId
+     * @return
+     */
+    public List<File> getFilesInJob(String accessToken, long projectId, long jobId) {
+        return getFilesInJob(accessToken, projectId, jobId, defaultPagingInput);
+    }
+
+    /**
+     * Returns a page of files associated with a job.
+     * @param accessToken
+     * @param projectId
+     * @param jobId
+     * @param pagingInput
+     * @return
+     */
+    public List<File> getFilesInJob(String accessToken, long projectId, long jobId, PagingInput pagingInput) {
+        final String url = String.format("/projects/%d/jobs/%d/files", projectId, jobId);
+        return getList(accessToken, url, pagingInput, File.class);
+    }
+
+    /**
+     * Returns metrics for a Lingo24 job.
+     * @param accessToken
+     * @param projectId
+     * @param jobId
+     * @return
+     */
+    public JobMetrics getProjectJobMetrics(String accessToken, long projectId, long jobId) {
+        final String url = String.format("/projects/%d/jobs/%d/metrics", projectId, jobId);
+        return get(accessToken, url, JobMetrics.class);
+    }
+
+    /**
+     * Returns prices for a Lingo24 job.
+     * @param accessToken
+     * @param projectId
+     * @param jobId
+     * @return
+     */
+    public Price getProjectJobPrice(String accessToken, long projectId, long jobId) {
+        final String url = String.format("/projects/%d/jobs/%d/price", projectId, jobId);
+        return get(accessToken, url, Price.class);
     }
 }

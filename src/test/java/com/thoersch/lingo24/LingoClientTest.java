@@ -1,8 +1,6 @@
 package com.thoersch.lingo24;
 
-import com.thoersch.lingo24.representations.Locale;
-import com.thoersch.lingo24.representations.Project;
-import com.thoersch.lingo24.representations.File;
+import com.thoersch.lingo24.representations.*;
 import junit.framework.TestCase;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,7 +16,13 @@ public class LingoClientTest extends TestCase {
 
     @Before
     public void setup() {
-        lingoClient = new LingoClient("17f46572-26b5-4c03-9082-61d88af073ff", "http://localhost", "a782c71a", "a608178e93175ddf19fa67a2f202e97b", true);
+        LingoInfo info = new LingoInfo();
+        info.setClientId("a782c71a");
+        info.setClientSecret("a608178e93175ddf19fa67a2f202e97b");
+        info.setRedirectUri("http://localhost");
+        info.setRefreshToken("17f46572-26b5-4c03-9082-61d88af073ff");
+        info.setIsSandbox(true);
+        lingoClient = new LingoClient(info);
     }
 
     @Test
@@ -46,13 +50,19 @@ public class LingoClientTest extends TestCase {
     public void shouldReturnSpecificServiceById() {
         String accessToken = lingoClient.getAccessToken().getAccessToken();
         long serviceId = lingoClient.getServices(accessToken).get(0).getId();
-        System.out.println(lingoClient.getServiceById(accessToken, serviceId));
+        Service foundService = lingoClient.getServiceById(accessToken, serviceId);
+        System.out.println(foundService);
+
+        assertNotNull("Service is null", foundService);
     }
 
     @Test
     public void shouldReturnLocalesForAuthenticatedUser() {
         String accessToken = lingoClient.getAccessToken().getAccessToken();
-        System.out.println(lingoClient.getLocales(accessToken));
+        List<Locale> locales = lingoClient.getLocales(accessToken);
+        System.out.println(locales);
+
+        assertTrue("Can't fetch locales", locales.size() > 0 && locales.get(0).getId() > 0);
     }
 
     @Test
@@ -60,7 +70,9 @@ public class LingoClientTest extends TestCase {
         String accessToken = lingoClient.getAccessToken().getAccessToken();
         List<Locale> locales = lingoClient.getLocales(accessToken);
         long localeId = locales.get(0).getId();
-        System.out.println(lingoClient.getLocaleById(accessToken, localeId));
+        Locale foundLocale = lingoClient.getLocaleById(accessToken, localeId);
+        System.out.println(foundLocale);
+        assertNotNull("local doesn't exist.", foundLocale);
     }
 
     @Test
@@ -68,38 +80,59 @@ public class LingoClientTest extends TestCase {
         String accessToken = lingoClient.getAccessToken().getAccessToken();
         List<Project> projects = lingoClient.getProjects(accessToken);
         System.out.println(projects);
+        assertTrue("Should return at least one project.", projects.size() > 0);
     }
 
     @Test
     public void shouldReturnSpecificProjectById() {
         String accessToken = lingoClient.getAccessToken().getAccessToken();
-        List<Project> projects = lingoClient.getProjects(accessToken);
-        long projectId = projects.get(0).getId();
-        System.out.println(lingoClient.getProjectById(accessToken, projectId));
+
+        Project project = lingoClient.createProject(accessToken, getProjectToCreate());
+
+        Project foundProject = lingoClient.getProjectById(accessToken, project.getId());
+
+        assertNotNull(foundProject);
+        assertTrue("Project didn't get created.", foundProject.getId() > 0);
+        System.out.println(lingoClient.getProjectById(accessToken, project.getId()));
+
+        lingoClient.deleteProjectById(accessToken, project.getId());
     }
 
     @Test
     public void shouldReturnProjectFiles() {
         String accessToken = lingoClient.getAccessToken().getAccessToken();
-        List<Project> projects = lingoClient.getProjects(accessToken);
-        long projectId = projects.get(0).getId();
+
+
+        Project project = lingoClient.createProject(accessToken, getProjectToCreate());
+        long projectId = project.getId();
+
+        File createdFile = lingoClient.createFile(accessToken, "test.test");
+        lingoClient.addFileToProject(accessToken, projectId, createdFile);
 
         List<File> projectFiles = lingoClient.getProjectFiles(accessToken, projectId);
-        assertTrue(projectFiles.size() > 0);
+        assertTrue("Project files not found", projectFiles.size() > 0);
         System.out.println(projectFiles);
+
+        lingoClient.deleteFileById(accessToken, createdFile.getId());
+        lingoClient.deleteProjectById(accessToken, projectId);
     }
 
     @Test
     public void shouldReturnDomainsForAuthenticatedUser() {
         String accessToken = lingoClient.getAccessToken().getAccessToken();
-        System.out.println(lingoClient.getDomains(accessToken));
+        List<Domain> domains = lingoClient.getDomains(accessToken);
+        System.out.println(domains);
+        assertTrue("Can't fetch domains", domains.size() > 0);
     }
 
     @Test
     public void shouldReturnSpecificDomainById() {
         String accessToken = lingoClient.getAccessToken().getAccessToken();
         long domainId = lingoClient.getDomains(accessToken).get(0).getId();
-        System.out.println(lingoClient.getDomainById(accessToken, domainId));
+        Domain specificDomain = lingoClient.getDomainById(accessToken, domainId);
+        System.out.println(specificDomain);
+
+        assertNotNull("Can't fetch domain.", specificDomain);
     }
 
     @Test
@@ -118,5 +151,13 @@ public class LingoClientTest extends TestCase {
         } catch (Exception e) {
             fail();
         }
+    }
+
+    private Project getProjectToCreate() {
+        Project.Builder projectBuilder = new Project.Builder();
+        projectBuilder.name("test project");
+        projectBuilder.projectStatus(ProjectStatus.IN_PROGRESS);
+
+        return projectBuilder.build();
     }
 }
