@@ -7,13 +7,13 @@ public class Job {
     private Integer id;
     private JobStatus jobStatus;
     private Integer projectId;
-    private Integer serviceId;
+    private Long serviceId;
     private String sourceLocale;
-    private Integer sourceLocalId;
+    private Long sourceLocalId;
     private String targetLocale;
-    private Integer targetLocaleId;
-    private Integer sourceFileId;
-    private Integer targetFileId;
+    private Long targetLocaleId;
+    private Long sourceFileId;
+    private Long targetFileId;
 
     public Job() { }
 
@@ -34,13 +34,13 @@ public class Job {
         private Integer id;
         private JobStatus jobStatus;
         private Integer projectId;
-        private Integer serviceId;
+        private Long serviceId;
         private String sourceLocale;
-        private Integer sourceLocalId;
+        private Long sourceLocalId;
         private String targetLocale;
-        private Integer targetLocaleId;
-        private Integer sourceFileId;
-        private Integer targetFileId;
+        private Long targetLocaleId;
+        private Long sourceFileId;
+        private Long targetFileId;
 
         public Builder id(Integer val) {
             this.id = val;
@@ -57,7 +57,7 @@ public class Job {
             return this;
         }
 
-        public Builder serviceId(Integer val) {
+        public Builder serviceId(Long val) {
             this.serviceId = val;
             return this;
         }
@@ -67,7 +67,7 @@ public class Job {
             return this;
         }
 
-        public Builder sourceLocalId(Integer val) {
+        public Builder sourceLocalId(Long val) {
             this.sourceLocalId = val;
             return this;
         }
@@ -77,17 +77,17 @@ public class Job {
             return this;
         }
 
-        public Builder targetLocalId(Integer val) {
+        public Builder targetLocalId(Long val) {
             this.targetLocaleId = val;
             return this;
         }
 
-        public Builder sourceFileId(Integer val) {
+        public Builder sourceFileId(Long val) {
             this.sourceFileId = val;
             return this;
         }
 
-        public Builder targetFileId(Integer val) {
+        public Builder targetFileId(Long val) {
             this.targetFileId = val;
             return this;
         }
@@ -122,11 +122,11 @@ public class Job {
         this.projectId = projectId;
     }
 
-    public int getServiceId() {
+    public long getServiceId() {
         return serviceId;
     }
 
-    public void setServiceId(int serviceId) {
+    public void setServiceId(long serviceId) {
         this.serviceId = serviceId;
     }
 
@@ -138,11 +138,11 @@ public class Job {
         this.sourceLocale = sourceLocale;
     }
 
-    public int getSourceLocalId() {
+    public long getSourceLocalId() {
         return sourceLocalId;
     }
 
-    public void setSourceLocalId(int sourceLocalId) {
+    public void setSourceLocalId(long sourceLocalId) {
         this.sourceLocalId = sourceLocalId;
     }
 
@@ -154,34 +154,34 @@ public class Job {
         this.targetLocale = targetLocale;
     }
 
-    public int getTargetLocaleId() {
+    public long getTargetLocaleId() {
         return targetLocaleId;
     }
 
-    public void setTargetLocaleId(int targetLocaleId) {
+    public void setTargetLocaleId(long targetLocaleId) {
         this.targetLocaleId = targetLocaleId;
     }
 
-    public int getSourceFileId() {
+    public long getSourceFileId() {
         return sourceFileId;
     }
 
-    public void setSourceFileId(int sourceFileId) {
+    public void setSourceFileId(long sourceFileId) {
         this.sourceFileId = sourceFileId;
     }
 
-    public int getTargetFileId() {
+    public long getTargetFileId() {
         return targetFileId;
     }
 
-    public void setTargetFileId(int targetFileId) {
+    public void setTargetFileId(long targetFileId) {
         this.targetFileId = targetFileId;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Job)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
 
         Job job = (Job) o;
 

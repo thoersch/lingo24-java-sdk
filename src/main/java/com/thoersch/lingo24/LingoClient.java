@@ -218,9 +218,9 @@ public class LingoClient extends BaseClient {
      * @param content
      * @return
      */
-    public String updateFileContent(String accessToken, long fileId, String content) {
+    public void updateFileContent(String accessToken, long fileId, String content) {
         final String url = String.format("/files/%d/content", fileId);
-        return update(accessToken, url, content, String.class);
+        update(accessToken, url, content, String.class);
     }
 
     /**
@@ -375,7 +375,7 @@ public class LingoClient extends BaseClient {
      * @param projectId
      * @param jobId
      */
-    public void deletJobById(String accessToken, long projectId, long jobId) {
+    public void deleteJobById(String accessToken, long projectId, long jobId) {
         final String url = String.format("/projects/%d/jobs/%d", projectId, jobId);
         delete(accessToken, url);
     }
