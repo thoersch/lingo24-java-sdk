@@ -10,6 +10,10 @@ public class File {
 
     public File() { }
 
+    public File(File file) {
+        this(file.getId(), file.getName(), file.getType());
+    }
+
     public File(Long id, String name, FileType type) {
         this.id = id;
         this.name = name;

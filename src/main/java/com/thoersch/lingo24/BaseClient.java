@@ -168,7 +168,6 @@ public abstract class BaseClient {
 
     private com.fasterxml.jackson.databind.ObjectMapper getObjectMapper() {
         com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-        //mapper.setPropertyNamingStrategy(PropertyNamingStrategy.PASCAL_CASE_TO_CAMEL_CASE);
         mapper.enable(SerializationFeature.WRITE_ENUMS_USING_TO_STRING);
         mapper.enable( DeserializationFeature.READ_ENUMS_USING_TO_STRING);
         return mapper;

@@ -1,7 +1,6 @@
 package com.thoersch.lingo24.representations;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -13,6 +12,14 @@ public class Project {
     private Long created;
 
     public Project() { }
+
+    public Project(Project project) {
+        this.id = project.id;
+        this.name = project.name;
+        this.domainId = project.domainId;
+        this.projectStatus = project.projectStatus;
+        this.created = project.created;
+    }
 
     public Project(Builder builder) {
         this.id = builder.id;

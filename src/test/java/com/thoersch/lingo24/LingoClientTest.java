@@ -403,7 +403,7 @@ public class LingoClientTest extends TestCase {
         projectVM.setName("API - Translation Test Project");
         projectVM.setProjectStatus(ProjectStatus.IN_PROGRESS);
 
-        File fileVM1 = new File();
+        FileVM fileVM1 = new FileVM();
         fileVM1.setName("testFile.json");
         fileVM1.setContent("{\"Key\": \"Value\"}");
 

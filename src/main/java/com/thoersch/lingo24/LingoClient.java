@@ -2,6 +2,7 @@ package com.thoersch.lingo24;
 
 import com.thoersch.lingo24.representations.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -453,7 +454,6 @@ public class LingoClient extends BaseClient {
         }
 
         try {
-
             FileVM file = project.getFile();
             File createdFile = file;
             if (file != null && (file.getId() == null || file.getId() <= 0)) {

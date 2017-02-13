@@ -4,15 +4,15 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Job {
-    private Integer id;
+    private Long id;
     private JobStatus jobStatus;
-    private long projectId;
+    private Long projectId;
     private Long serviceId;
     private String sourceLocale;
-    private long sourceLocaleId;
+    private Long sourceLocaleId;
     private String targetLocale;
-    private long targetLocaleId;
-    private long sourceFileId;
+    private Long targetLocaleId;
+    private Long sourceFileId;
     private Long targetFileId;
 
     public Job() { }
@@ -30,19 +30,32 @@ public class Job {
         this.targetFileId = builder.targetFileId;
     }
 
+    public Job(Job job) {
+        this.id = job.id;
+        this.jobStatus = job.jobStatus;
+        this.projectId = job.projectId;
+        this.serviceId = job.serviceId;
+        this.sourceLocale = job.sourceLocale;
+        this.sourceLocaleId = job.sourceLocaleId;
+        this.targetLocale = job.targetLocale;
+        this.targetLocaleId = job.targetLocaleId;
+        this.sourceFileId = job.sourceFileId;
+        this.targetFileId = job.targetFileId;
+    }
+
     public static class Builder {
-        private Integer id;
+        private Long id;
         private JobStatus jobStatus;
-        private long projectId;
+        private Long projectId;
         private Long serviceId;
         private String sourceLocale;
-        private long sourceLocaleId;
+        private Long sourceLocaleId;
         private String targetLocale;
-        private long targetLocaleId;
-        private long sourceFileId;
+        private Long targetLocaleId;
+        private Long sourceFileId;
         private Long targetFileId;
 
-        public Builder id(Integer val) {
+        public Builder id(Long val) {
             this.id = val;
             return this;
         }
@@ -52,7 +65,7 @@ public class Job {
             return this;
         }
 
-        public Builder projectId(Integer val) {
+        public Builder projectId(Long val) {
             this.projectId = val;
             return this;
         }
@@ -98,11 +111,11 @@ public class Job {
         }
     }
 
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -114,7 +127,7 @@ public class Job {
         this.jobStatus = jobStatus;
     }
 
-    public long getProjectId() {
+    public Long getProjectId() {
         return projectId;
     }
 
@@ -138,11 +151,11 @@ public class Job {
         this.sourceLocale = sourceLocale;
     }
 
-    public long getSourceLocaleId() {
+    public Long getSourceLocaleId() {
         return sourceLocaleId;
     }
 
-    public void setSourceLocaleId(long sourceLocaleId) {
+    public void setSourceLocaleId(Long sourceLocaleId) {
         this.sourceLocaleId = sourceLocaleId;
     }
 
@@ -154,23 +167,23 @@ public class Job {
         this.targetLocale = targetLocale;
     }
 
-    public long getTargetLocaleId() {
+    public Long getTargetLocaleId() {
         return targetLocaleId;
     }
 
-    public void setTargetLocaleId(long targetLocaleId) {
+    public void setTargetLocaleId(Long targetLocaleId) {
         this.targetLocaleId = targetLocaleId;
     }
 
-    public long getSourceFileId() {
+    public Long getSourceFileId() {
         return sourceFileId;
     }
 
-    public void setSourceFileId(long sourceFileId) {
+    public void setSourceFileId(Long sourceFileId) {
         this.sourceFileId = sourceFileId;
     }
 
-    public long getTargetFileId() {
+    public Long getTargetFileId() {
         return targetFileId;
     }
 
@@ -185,15 +198,16 @@ public class Job {
 
         Job job = (Job) o;
 
-        if (projectId != job.projectId) return false;
-        if (sourceLocaleId != job.sourceLocaleId) return false;
-        if (targetLocaleId != job.targetLocaleId) return false;
-        if (sourceFileId != job.sourceFileId) return false;
         if (id != null ? !id.equals(job.id) : job.id != null) return false;
         if (jobStatus != job.jobStatus) return false;
+        if (projectId != null ? !projectId.equals(job.projectId) : job.projectId != null) return false;
         if (serviceId != null ? !serviceId.equals(job.serviceId) : job.serviceId != null) return false;
         if (sourceLocale != null ? !sourceLocale.equals(job.sourceLocale) : job.sourceLocale != null) return false;
+        if (sourceLocaleId != null ? !sourceLocaleId.equals(job.sourceLocaleId) : job.sourceLocaleId != null) return false;
         if (targetLocale != null ? !targetLocale.equals(job.targetLocale) : job.targetLocale != null) return false;
+        if (targetLocaleId != null ? !targetLocaleId.equals(job.targetLocaleId) : job.targetLocaleId != null)
+            return false;
+        if (sourceFileId != null ? !sourceFileId.equals(job.sourceFileId) : job.sourceFileId != null) return false;
         return !(targetFileId != null ? !targetFileId.equals(job.targetFileId) : job.targetFileId != null);
 
     }
@@ -202,13 +216,13 @@ public class Job {
     public int hashCode() {
         int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (jobStatus != null ? jobStatus.hashCode() : 0);
-        result = 31 * result + (int) (projectId ^ (projectId >>> 32));
+        result = 31 * result + (projectId != null ? projectId.hashCode() : 0);
         result = 31 * result + (serviceId != null ? serviceId.hashCode() : 0);
         result = 31 * result + (sourceLocale != null ? sourceLocale.hashCode() : 0);
-        result = 31 * result + (int) (sourceLocaleId ^ (sourceLocaleId >>> 32));
+        result = 31 * result + (sourceLocaleId != null ? sourceLocaleId.hashCode() : 0);
         result = 31 * result + (targetLocale != null ? targetLocale.hashCode() : 0);
-        result = 31 * result + (int) (targetLocaleId ^ (targetLocaleId >>> 32));
-        result = 31 * result + (int) (sourceFileId ^ (sourceFileId >>> 32));
+        result = 31 * result + (targetLocaleId != null ? targetLocaleId.hashCode() : 0);
+        result = 31 * result + (sourceFileId != null ? sourceFileId.hashCode() : 0);
         result = 31 * result + (targetFileId != null ? targetFileId.hashCode() : 0);
         return result;
     }
