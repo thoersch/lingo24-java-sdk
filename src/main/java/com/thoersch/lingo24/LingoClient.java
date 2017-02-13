@@ -23,7 +23,7 @@ public class LingoClient extends BaseClient {
     private final boolean isSandbox;
     private final PagingInput defaultPagingInput;
 
-    public LingoClient(LingoInfo lingoInfo) {
+    public LingoClient(LingoConfiguration lingoInfo) {
         super(VERSION);
         this.refreshToken = lingoInfo.getRefreshToken();
         this.redirectUri = lingoInfo.getRedirectUri();
@@ -438,5 +438,49 @@ public class LingoClient extends BaseClient {
     public Price getProjectJobPrice(String accessToken, long projectId, long jobId) {
         final String url = String.format("/projects/%d/jobs/%d/price", projectId, jobId);
         return get(accessToken, url, Price.class);
+    }
+
+
+    public ProjectVM createTranslationJob(String accessToken, ProjectVM project) throws Exception {
+        if (project == null) {
+            return null;
+        }
+
+        Project createdProject = project;
+        if (project.getId() == null) {
+            createdProject = this.createProject(accessToken, project);
+            project.setId(createdProject.getId());
+        }
+
+        try {
+
+            FileVM file = project.getFile();
+            File createdFile = file;
+            if (file != null && (file.getId() == null || file.getId() <= 0)) {
+                createdFile = this.createFile(accessToken, file.getName());
+
+                this.updateFileContent(accessToken, createdFile.getId(), file.getContent());
+                this.addFileToProject(accessToken, createdProject.getId(), createdFile);
+            }
+
+            project.setFile(new FileVM(createdFile));
+
+            List<Job> createdJobs = new ArrayList<Job>();
+            for (Job job : project.getJobs()) {
+                if (job.getId() == null || job.getId() <= 0) {
+                    job.setSourceFileId(createdFile.getId());
+                    job.setProjectId(createdProject.getId());
+                    Job createdJob = this.addJobToProject(accessToken, createdProject.getId(), job);
+                    createdJobs.add(createdJob);
+                }
+            }
+
+            project.setJobs(createdJobs);
+        } catch (Exception ex) {
+            this.deleteProjectById(accessToken, createdProject.getId());
+            throw ex;
+        }
+
+        return project;
     }
 }

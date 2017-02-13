@@ -1,7 +1,8 @@
 package com.thoersch.lingo24;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
@@ -54,20 +55,21 @@ public abstract class BaseClient {
         return result;
     }
 
-    protected <T> T get(String accessToken, String url, Class clazz) {
+    protected <T> T get(String accessToken, String url, Class<T> clazz) {
         try {
             HttpResponse<T> response = Unirest.get(getUrl(url)).headers(getHeadersWithAuthorization(accessToken)).asObject(clazz);
-
+            handleErrorResponse(response);
             return response.getBody();
         } catch (Exception e) {
             throw new LingoException(e);
         }
     }
 
-    protected <T> List<T> getList(String accessToken, String url, PagingInput pagingInput, Class clazz) {
+    protected <T> List<T> getList(String accessToken, String url, PagingInput pagingInput, Class<T> clazz) {
         try {
 
             HttpResponse<JsonNode> response = Unirest.get(getUrl(url)).headers(getHeadersWithAuthorization(accessToken)).queryString(getPagingMap(pagingInput)).asJson();
+            handleErrorResponse(response);
             JSONArray jsonResponse = response.getBody().getObject().getJSONArray(CONTENT);
             TypeFactory t = TypeFactory.defaultInstance();
             return getObjectMapper().readValue(jsonResponse.toString(), t.constructCollectionType(ArrayList.class, clazz));
@@ -76,9 +78,10 @@ public abstract class BaseClient {
         }
     }
 
-    protected <T> T create(String accessToken, String url, T payload, Class clazz) {
+    protected <T> T create(String accessToken, String url, T payload, Class<T> clazz) {
         try {
             HttpResponse<T> response = Unirest.post(getUrl(url)).headers(getHeadersWithAuthorization(accessToken)).body(payload).asObject(clazz);
+            handleErrorResponse(response);
             return response.getBody();
         } catch (Exception e) {
             throw new LingoException(e);
@@ -96,18 +99,20 @@ public abstract class BaseClient {
         }
     }
 
-    protected <T> T create(String accessToken, String url, Object payload, Map<String, Object> queryStringMap, Class clazz) {
+    protected <T> T create(String accessToken, String url, Object payload, Map<String, Object> queryStringMap, Class<T> clazz) {
         try {
             HttpResponse<T> response = Unirest.post(getUrl(url)).headers(getHeadersWithAuthorization(accessToken)).queryString(queryStringMap).body(payload).asObject(clazz);
+            handleErrorResponse(response);
             return response.getBody();
         } catch (Exception e) {
             throw new LingoException(e);
         }
     }
 
-    protected <T> T update(String accessToken, String url, Object payload, Class clazz) {
+    protected <T> T update(String accessToken, String url, Object payload, Class<T> clazz) {
         try {
             HttpResponse<T> response = Unirest.put(getUrl(url)).headers(getHeadersWithAuthorization(accessToken)).body(payload).asObject(clazz);
+            handleErrorResponse(response);
             return response.getBody();
         } catch (Exception e) {
             throw new LingoException(e);
@@ -136,7 +141,6 @@ public abstract class BaseClient {
                 }
             }
 
-            @Override
             public String writeValue(Object value) {
                 try {
                     return getObjectMapper().writeValueAsString(value);
@@ -164,7 +168,9 @@ public abstract class BaseClient {
 
     private com.fasterxml.jackson.databind.ObjectMapper getObjectMapper() {
         com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-        mapper.setPropertyNamingStrategy(PropertyNamingStrategy.CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES);
+        //mapper.setPropertyNamingStrategy(PropertyNamingStrategy.PASCAL_CASE_TO_CAMEL_CASE);
+        mapper.enable(SerializationFeature.WRITE_ENUMS_USING_TO_STRING);
+        mapper.enable( DeserializationFeature.READ_ENUMS_USING_TO_STRING);
         return mapper;
     }
 
@@ -186,5 +192,11 @@ public abstract class BaseClient {
         }
 
         return result;
+    }
+
+    private void handleErrorResponse(HttpResponse response) {
+        if(response.getStatus() >= 400) {
+            throw new LingoException(response.getStatusText());
+        }
     }
 }

@@ -11,12 +11,11 @@ import java.util.List;
 
 @RunWith(JUnit4.class)
 public class LingoClientTest extends TestCase {
-
     LingoClient lingoClient;
 
     @Before
     public void setup() {
-        LingoInfo info = new LingoInfo();
+        LingoConfiguration info = new LingoConfiguration();
         info.setClientId("a782c71a");
         info.setClientSecret("a608178e93175ddf19fa67a2f202e97b");
         info.setRedirectUri("http://localhost");
@@ -111,17 +110,12 @@ public class LingoClientTest extends TestCase {
         String accessToken = lingoClient.getAccessToken().getAccessToken();
         Project project = lingoClient.createProject(accessToken, getProjectToCreate());
         Project foundProject = lingoClient.getProjectById(accessToken, project.getId());
+        lingoClient.deleteProjectById(accessToken, project.getId());
         assertNotNull("Project is null", foundProject);
         assertNotNull("Project id is null", foundProject.getId());
         assertNotNull("Project name is null", foundProject.getName());
         assertNotNull("Project created date is null", foundProject.getCreated());
         assertNotNull("Project status is null", foundProject.getProjectStatus());
-
-        try {
-            lingoClient.deleteProjectById(accessToken, project.getId());
-        } catch (Exception e) {
-            fail();
-        }
     }
 
     @Test
@@ -131,18 +125,18 @@ public class LingoClientTest extends TestCase {
 
         assertNotNull("Project is null", project);
 
-        final String updatedProjectName = "API - Updated Project Name";
-        project.setName(updatedProjectName);
-        lingoClient.updateProjectById(accessToken, project.getId(), project);
-        Project foundProject = lingoClient.getProjectById(accessToken, project.getId());
-
-        assertNotNull("Project is null", foundProject);
-        assertEquals("Project name does not match", updatedProjectName, foundProject.getName());
-
         try {
-            lingoClient.deleteProjectById(accessToken, project.getId());
+            final String updatedProjectName = "API - Updated Project Name";
+            project.setName(updatedProjectName);
+            lingoClient.updateProjectById(accessToken, project.getId(), project);
+            Project foundProject = lingoClient.getProjectById(accessToken, project.getId());
+
+            assertNotNull("Project is null", foundProject);
+            assertEquals("Project name does not match", updatedProjectName, foundProject.getName());
         } catch (Exception e) {
             fail();
+        } finally {
+            lingoClient.deleteProjectById(accessToken, project.getId());
         }
     }
 
@@ -234,17 +228,17 @@ public class LingoClientTest extends TestCase {
         assertNotNull("File name is null", file.getName());
         assertNotNull("File type is null", file.getType());
 
-        file = lingoClient.getFileById(accessToken, file.getId());
-
-        assertNotNull("File is null", file);
-        assertNotNull("File id is null", file.getId());
-        assertNotNull("File name is null", file.getName());
-        assertNotNull("File type is null", file.getType());
-
         try {
-            lingoClient.deleteFileById(accessToken, file.getId());
+            file = lingoClient.getFileById(accessToken, file.getId());
+
+            assertNotNull("File is null", file);
+            assertNotNull("File id is null", file.getId());
+            assertNotNull("File name is null", file.getName());
+            assertNotNull("File type is null", file.getType());
         } catch (Exception e) {
             fail();
+        } finally {
+            lingoClient.deleteFileById(accessToken, file.getId());
         }
     }
 
@@ -258,22 +252,22 @@ public class LingoClientTest extends TestCase {
         assertNotNull("File name is null", file.getName());
         assertNotNull("File type is null", file.getType());
 
-        final String message = "API TEST CONTENT";
         try {
-            lingoClient.updateFileContent(accessToken, file.getId(), message);
-        } catch (Exception e) {
+            final String message = "API TEST CONTENT";
+            try {
+                lingoClient.updateFileContent(accessToken, file.getId(), message);
+            } catch (Exception e) {
+                fail();
+            }
+
+            String content = lingoClient.getFileContent(accessToken, file.getId()).replace("\"", "");
+
+            assertNotNull("File content is null", content);
+            assertEquals("File content does not match", message, content);
+        } catch(Exception ex) {
             fail();
-        }
-
-        String content = lingoClient.getFileContent(accessToken, file.getId()).replace("\"", "");
-
-        assertNotNull("File content is null", content);
-        assertEquals("File content does not match", message, content);
-
-        try {
+        } finally {
             lingoClient.deleteFileById(accessToken, file.getId());
-        } catch (Exception e) {
-            fail();
         }
     }
 
@@ -284,41 +278,44 @@ public class LingoClientTest extends TestCase {
 
         assertNotNull("Project is null", project);
 
-        int projectId = project.getId();
+        long projectId = project.getId();
 
-        File createdFile = lingoClient.createFile(accessToken, "test.test");
-        assertNotNull("File is null", createdFile);
-
-        lingoClient.addFileToProject(accessToken, projectId, createdFile);
-
-        List<Locale> locales = lingoClient.getLocales(accessToken);
-        long sourceLocaleId = locales.get(0).getId();
-        long targetLocaleId = locales.get(1).getId();
-        List<Service> services = lingoClient.getServices(accessToken);
-        long serviceId = services.get(0).getId();
-
-        Job job = new Job.Builder().projectId(projectId).sourceFileId(createdFile.getId()).sourceLocalId(sourceLocaleId).targetLocalId(targetLocaleId).serviceId(serviceId).build();
-        job = lingoClient.addJobToProject(accessToken, projectId, job);
-        assertNotNull("Job is null", job);
-        assertNotNull("Job id is null", job.getId());
-
-        Job createdJob = lingoClient.getJobById(accessToken, projectId, job.getId());
-        assertNotNull("Job is null", createdJob);
-        assertNotNull("Job id is null", createdJob.getId());
-        assertNotNull("Job status is null", createdJob.getJobStatus());
-        assertNotNull("Job project id is null", createdJob.getProjectId());
-        assertNotNull("Job service id is null", createdJob.getServiceId());
-        assertNotNull("Job source file id is null", createdJob.getSourceFileId());
-        assertNotNull("Job source locale is null", createdJob.getSourceLocale());
-        assertNotNull("Job source locale id is null", createdJob.getSourceLocalId());
-        assertNotNull("Job target file id is null", createdJob.getTargetFileId());
-        assertNotNull("Job target locale is null", createdJob.getTargetLocale());
-        assertNotNull("Job target locale id is null", createdJob.getTargetLocaleId());
 
         try {
+            File createdFile = lingoClient.createFile(accessToken, "test.test");
+            assertNotNull("File is null", createdFile);
+
+            lingoClient.addFileToProject(accessToken, projectId, createdFile);
+
+            List<Locale> locales = lingoClient.getLocales(accessToken);
+            long sourceLocaleId = locales.get(0).getId();
+            long targetLocaleId = locales.get(1).getId();
+            List<Service> services = lingoClient.getServices(accessToken);
+            long serviceId = services.get(0).getId();
+
+            Job job = new Job.Builder().projectId(projectId).sourceFileId(createdFile.getId()).sourceLocaleId(sourceLocaleId).targetLocaleId(targetLocaleId).serviceId(serviceId).build();
+            job = lingoClient.addJobToProject(accessToken, projectId, job);
+            assertNotNull("Job is null", job);
+            assertNotNull("Job id is null", job.getId());
+
+            Job createdJob = lingoClient.getJobById(accessToken, projectId, job.getId());
+            assertNotNull("Job is null", createdJob);
+            assertNotNull("Job id is null", createdJob.getId());
+            assertNotNull("Job status is null", createdJob.getJobStatus());
+            assertNotNull("Job project id is null", createdJob.getProjectId());
+            assertNotNull("Job service id is null", createdJob.getServiceId());
+            assertNotNull("Job source file id is null", createdJob.getSourceFileId());
+            assertNotNull("Job source locale is null", createdJob.getSourceLocale());
+            assertNotNull("Job source locale id is null", createdJob.getSourceLocaleId());
+            assertNotNull("Job target file id is null", createdJob.getTargetFileId());
+            assertNotNull("Job target locale is null", createdJob.getTargetLocale());
+            assertNotNull("Job target locale id is null", createdJob.getTargetLocaleId());
+
             lingoClient.deleteJobById(accessToken, projectId, createdJob.getId());
-        } catch (Exception e) {
+        } catch(Exception ex) {
             fail();
+        } finally {
+            lingoClient.deleteProjectById(accessToken, projectId);
         }
     }
 
@@ -329,26 +326,32 @@ public class LingoClientTest extends TestCase {
 
         assertNotNull("Project is null", project);
 
-        int projectId = project.getId();
+        long projectId = project.getId();
 
-        File createdFile = lingoClient.createFile(accessToken, "test.test");
-        assertNotNull("File is null", createdFile);
+        try {
+            File createdFile = lingoClient.createFile(accessToken, "test.test");
+            assertNotNull("File is null", createdFile);
 
-        lingoClient.addFileToProject(accessToken, projectId, createdFile);
+            lingoClient.addFileToProject(accessToken, projectId, createdFile);
 
-        List<Locale> locales = lingoClient.getLocales(accessToken);
-        long sourceLocaleId = locales.get(0).getId();
-        long targetLocaleId = locales.get(1).getId();
-        List<Service> services = lingoClient.getServices(accessToken);
-        long serviceId = services.get(0).getId();
+            List<Locale> locales = lingoClient.getLocales(accessToken);
+            long sourceLocaleId = locales.get(0).getId();
+            long targetLocaleId = locales.get(1).getId();
+            List<Service> services = lingoClient.getServices(accessToken);
+            long serviceId = services.get(0).getId();
 
-        Job job = new Job.Builder().projectId(projectId).sourceFileId(createdFile.getId()).sourceLocalId(sourceLocaleId).targetLocalId(targetLocaleId).serviceId(serviceId).build();
-        job = lingoClient.addJobToProject(accessToken, projectId, job);
-        assertNotNull("Job is null", job);
+            Job job = new Job.Builder().projectId(projectId).sourceFileId(createdFile.getId()).sourceLocaleId(sourceLocaleId).targetLocaleId(targetLocaleId).serviceId(serviceId).build();
+            job = lingoClient.addJobToProject(accessToken, projectId, job);
+            assertNotNull("Job is null", job);
 
-        List<File> files = lingoClient.getFilesInJob(accessToken, projectId,job.getId());
-        assertNotNull("Files is null", files);
-        assertTrue("Files is empty", files.size() > 0);
+            List<File> files = lingoClient.getFilesInJob(accessToken, projectId, job.getId());
+            assertNotNull("Files is null", files);
+            assertTrue("Files is empty", files.size() > 0);
+        } catch(Exception ex) {
+            fail();
+        } finally {
+            lingoClient.deleteProjectById(accessToken, projectId);
+        }
     }
 
     @Test
@@ -358,26 +361,75 @@ public class LingoClientTest extends TestCase {
 
         assertNotNull("Project is null", project);
 
-        int projectId = project.getId();
+        long projectId = project.getId();
 
-        File createdFile = lingoClient.createFile(accessToken, "test.test");
-        assertNotNull("File is null", createdFile);
+        try {
+            File createdFile = lingoClient.createFile(accessToken, "test.test");
+            assertNotNull("File is null", createdFile);
 
-        lingoClient.addFileToProject(accessToken, projectId, createdFile);
+            lingoClient.addFileToProject(accessToken, projectId, createdFile);
 
-        List<Locale> locales = lingoClient.getLocales(accessToken);
-        long sourceLocaleId = locales.get(0).getId();
-        long targetLocaleId = locales.get(1).getId();
-        List<Service> services = lingoClient.getServices(accessToken);
-        long serviceId = services.get(0).getId();
+            List<Locale> locales = lingoClient.getLocales(accessToken);
+            long sourceLocaleId = locales.get(0).getId();
+            long targetLocaleId = locales.get(1).getId();
+            List<Service> services = lingoClient.getServices(accessToken);
+            long serviceId = services.get(0).getId();
 
-        Job job = new Job.Builder().projectId(projectId).sourceFileId(createdFile.getId()).sourceLocalId(sourceLocaleId).targetLocalId(targetLocaleId).serviceId(serviceId).build();
-        job = lingoClient.addJobToProject(accessToken, projectId, job);
-        assertNotNull("Job is null", job);
+            Job job = new Job.Builder().projectId(projectId).sourceFileId(createdFile.getId()).sourceLocaleId(sourceLocaleId).targetLocaleId(targetLocaleId).serviceId(serviceId).build();
+            job = lingoClient.addJobToProject(accessToken, projectId, job);
+            assertNotNull("Job is null", job);
 
-        List<Job> jobs = lingoClient.getJobsForProject(accessToken, projectId);
-        assertNotNull("Jobs is null", jobs);
-        assertTrue("Jobs is empty", jobs.size() > 0);
+            List<Job> jobs = lingoClient.getJobsForProject(accessToken, projectId);
+            assertNotNull("Jobs is null", jobs);
+            assertTrue("Jobs is empty", jobs.size() > 0);
+        } catch(Exception ex) {
+            fail();
+        } finally {
+            lingoClient.deleteProjectById(accessToken, projectId);
+        }
+    }
+
+    @Test
+    public void testTranslationCreation() throws Exception {
+        long englishLocaleId = 47;
+        long espanolMXId = 183;
+        long espnanolESId = 56;
+        long serviceOnBrandId = 23;
+
+        String accessToken = lingoClient.getAccessToken().getAccessToken();
+
+        ProjectVM projectVM = new ProjectVM();
+
+        projectVM.setName("API - Translation Test Project");
+        projectVM.setProjectStatus(ProjectStatus.IN_PROGRESS);
+
+        File fileVM1 = new File();
+        fileVM1.setName("testFile.json");
+        fileVM1.setContent("{\"Key\": \"Value\"}");
+
+        fileVM1.setType(FileType.SOURCE);
+
+        Job job1 = new Job.Builder()
+                .sourceLocaleId(englishLocaleId)
+                .targetLocaleId(espanolMXId)
+                .serviceId(serviceOnBrandId)
+                .jobStatus(JobStatus.NEW).build();
+
+        Job job2 = new Job.Builder()
+                .sourceLocaleId(englishLocaleId)
+                .targetLocaleId(espnanolESId)
+                .serviceId(serviceOnBrandId)
+                .jobStatus(JobStatus.NEW).build();
+
+        projectVM.setFile(fileVM1);
+        projectVM.addJob(job1);
+        projectVM.addJob(job2);
+        ProjectVM createdProject = lingoClient.createTranslationJob(accessToken, projectVM);
+
+        System.out.println(createdProject);
+        assertNotNull(createdProject.getId());
+
+        lingoClient.deleteProjectById(accessToken, createdProject.getId());
     }
 
     private Project getProjectToCreate() {

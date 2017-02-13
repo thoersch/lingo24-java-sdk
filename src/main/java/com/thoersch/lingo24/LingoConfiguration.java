@@ -1,15 +1,15 @@
 package com.thoersch.lingo24;
 
-public class LingoInfo {
+public class LingoConfiguration {
     private String refreshToken;
     private String clientId;
     private String clientSecret;
     private String redirectUri;
     private boolean isSandbox;
 
-    public LingoInfo() { }
+    public LingoConfiguration() { }
 
-    public LingoInfo(Builder builder) {
+    public LingoConfiguration(Builder builder) {
         this.refreshToken = builder.refreshToken;
         this.clientId = builder.clientId;
         this.clientSecret = builder.clientSecret;
@@ -49,8 +49,8 @@ public class LingoInfo {
             return this;
         }
 
-        public LingoInfo build() {
-            return new LingoInfo(this);
+        public LingoConfiguration build() {
+            return new LingoConfiguration(this);
         }
     }
 
@@ -97,9 +97,9 @@ public class LingoInfo {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof LingoInfo)) return false;
+        if (!(o instanceof LingoConfiguration)) return false;
 
-        LingoInfo lingoInfo = (LingoInfo) o;
+        LingoConfiguration lingoInfo = (LingoConfiguration) o;
 
         if (isSandbox != lingoInfo.isSandbox) return false;
         if (refreshToken != null ? !refreshToken.equals(lingoInfo.refreshToken) : lingoInfo.refreshToken != null)

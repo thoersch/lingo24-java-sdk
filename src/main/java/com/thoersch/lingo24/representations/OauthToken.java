@@ -1,11 +1,15 @@
 package com.thoersch.lingo24.representations;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class OauthToken {
+    @JsonProperty("access_token")
     private String accessToken;
+    @JsonProperty("token_type")
     private String tokenType;
+    @JsonProperty("refresh_token")
     private String refreshToken;
     private Integer expiresIn;
     private String scope;

@@ -1,13 +1,14 @@
 package com.thoersch.lingo24.representations;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Project {
-    private Integer id;
+    private Long id;
     private String name;
-    private Integer domainId;
+    private Long domainId;
     private ProjectStatus projectStatus;
     private Long created;
 
@@ -22,13 +23,13 @@ public class Project {
     }
 
     public static class Builder {
-        private Integer id;
+        private Long id;
         private String name;
-        private Integer domainId;
+        private Long domainId;
         private ProjectStatus projectStatus;
         private Long created;
 
-        public Builder id(Integer val) {
+        public Builder id(Long val) {
             this.id = val;
             return this;
         }
@@ -38,7 +39,7 @@ public class Project {
             return this;
         }
 
-        public Builder domainId(Integer val) {
+        public Builder domainId(Long val) {
             this.domainId = val;
             return this;
         }
@@ -58,11 +59,11 @@ public class Project {
         }
     }
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -74,11 +75,11 @@ public class Project {
         this.name = name;
     }
 
-    public Integer getDomainId() {
+    public Long getDomainId() {
         return domainId;
     }
 
-    public void setDomainId(Integer domainId) {
+    public void setDomainId(Long domainId) {
         this.domainId = domainId;
     }
 
@@ -105,9 +106,9 @@ public class Project {
 
         Project project = (Project) o;
 
-        if (id != project.id) return false;
-        if (domainId != project.domainId) return false;
+        if (id != null ? !id.equals(project.id) : project.id != null) return false;
         if (name != null ? !name.equals(project.name) : project.name != null) return false;
+        if (domainId != null ? !domainId.equals(project.domainId) : project.domainId != null) return false;
         if (projectStatus != project.projectStatus) return false;
         return !(created != null ? !created.equals(project.created) : project.created != null);
 
@@ -115,9 +116,9 @@ public class Project {
 
     @Override
     public int hashCode() {
-        int result = id;
+        int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + domainId;
+        result = 31 * result + (domainId != null ? domainId.hashCode() : 0);
         result = 31 * result + (projectStatus != null ? projectStatus.hashCode() : 0);
         result = 31 * result + (created != null ? created.hashCode() : 0);
         return result;
