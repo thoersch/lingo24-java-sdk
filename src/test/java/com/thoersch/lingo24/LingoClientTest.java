@@ -389,49 +389,6 @@ public class LingoClientTest extends TestCase {
         }
     }
 
-    @Test
-    public void testTranslationCreation() throws Exception {
-        long englishLocaleId = 47;
-        long espanolMXId = 183;
-        long espnanolESId = 56;
-        long serviceOnBrandId = 23;
-
-        String accessToken = lingoClient.getAccessToken().getAccessToken();
-
-        ProjectVM projectVM = new ProjectVM();
-
-        projectVM.setName("API - Translation Test Project");
-        projectVM.setProjectStatus(ProjectStatus.IN_PROGRESS);
-
-        FileVM fileVM1 = new FileVM();
-        fileVM1.setName("testFile.json");
-        fileVM1.setContent("{\"Key\": \"Value\"}");
-
-        fileVM1.setType(FileType.SOURCE);
-
-        Job job1 = new Job.Builder()
-                .sourceLocaleId(englishLocaleId)
-                .targetLocaleId(espanolMXId)
-                .serviceId(serviceOnBrandId)
-                .jobStatus(JobStatus.NEW).build();
-
-        Job job2 = new Job.Builder()
-                .sourceLocaleId(englishLocaleId)
-                .targetLocaleId(espnanolESId)
-                .serviceId(serviceOnBrandId)
-                .jobStatus(JobStatus.NEW).build();
-
-        projectVM.setFile(fileVM1);
-        projectVM.addJob(job1);
-        projectVM.addJob(job2);
-        ProjectVM createdProject = lingoClient.createTranslationJob(accessToken, projectVM);
-
-        System.out.println(createdProject);
-        assertNotNull(createdProject.getId());
-
-        lingoClient.deleteProjectById(accessToken, createdProject.getId());
-    }
-
     private Project getProjectToCreate() {
         Project.Builder projectBuilder = new Project.Builder();
         projectBuilder.name("API - Test Project");
