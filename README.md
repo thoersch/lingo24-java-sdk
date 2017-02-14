@@ -3,6 +3,15 @@
   All calls start after you have connected your developer API account to the Ease customer portal in Lingo and that you 
   construct the client with required information from that oauth connection. For information on this process, please consult
   the [Lingo24 official documentation](https://developer.lingo24.com/documentation).
+  
+##Installation:##
+
+    <dependency>
+        <groupId>com.tylerhoersch.lingo24</groupId>
+        <artifactId>lingo24</artifactId>
+        <version>1.0</version>
+    </dependency>
+    
 
 ##Sample Usage:##
       
