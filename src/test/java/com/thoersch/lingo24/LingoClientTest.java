@@ -16,10 +16,10 @@ public class LingoClientTest extends TestCase {
     @Before
     public void setup() {
         LingoConfiguration info = new LingoConfiguration();
-        info.setClientId("a782c71a");
-        info.setClientSecret("a608178e93175ddf19fa67a2f202e97b");
-        info.setRedirectUri("http://localhost");
-        info.setRefreshToken("17f46572-26b5-4c03-9082-61d88af073ff");
+        info.setClientId("Fill");
+        info.setClientSecret("Me");
+        info.setRedirectUri("In");
+        info.setRefreshToken("Please");
         info.setIsSandbox(true);
         lingoClient = new LingoClient(info);
     }
@@ -307,9 +307,6 @@ public class LingoClientTest extends TestCase {
             assertNotNull("Job source file id is null", createdJob.getSourceFileId());
             assertNotNull("Job source locale is null", createdJob.getSourceLocale());
             assertNotNull("Job source locale id is null", createdJob.getSourceLocaleId());
-            assertNotNull("Job target file id is null", createdJob.getTargetFileId());
-            assertNotNull("Job target locale is null", createdJob.getTargetLocale());
-            assertNotNull("Job target locale id is null", createdJob.getTargetLocaleId());
 
             lingoClient.deleteJobById(accessToken, projectId, createdJob.getId());
         } catch(Exception ex) {
@@ -327,20 +324,27 @@ public class LingoClientTest extends TestCase {
         assertNotNull("Project is null", project);
 
         long projectId = project.getId();
+        File createdFile = lingoClient.createFile(accessToken, "test.test");
+        assertNotNull("File is null", createdFile);
+        assertNotNull("File id is null", createdFile.getId());
+        long fileId = createdFile.getId();
 
         try {
-            File createdFile = lingoClient.createFile(accessToken, "test.test");
-            assertNotNull("File is null", createdFile);
-
             lingoClient.addFileToProject(accessToken, projectId, createdFile);
 
             List<Locale> locales = lingoClient.getLocales(accessToken);
-            long sourceLocaleId = locales.get(0).getId();
-            long targetLocaleId = locales.get(1).getId();
+            Locale sourceLocale = locales.get(0);
+            Locale targetLocale = locales.get(1);
             List<Service> services = lingoClient.getServices(accessToken);
             long serviceId = services.get(0).getId();
 
-            Job job = new Job.Builder().projectId(projectId).sourceFileId(createdFile.getId()).sourceLocaleId(sourceLocaleId).targetLocaleId(targetLocaleId).serviceId(serviceId).build();
+            Job job = new Job.Builder()
+                             .projectId(projectId)
+                             .sourceFileId(fileId)
+                             .sourceLocaleId(sourceLocale.getId())
+                             .targetLocaleId(targetLocale.getId())
+                             .serviceId(serviceId)
+                             .build();
             job = lingoClient.addJobToProject(accessToken, projectId, job);
             assertNotNull("Job is null", job);
 
@@ -350,6 +354,7 @@ public class LingoClientTest extends TestCase {
         } catch(Exception ex) {
             fail();
         } finally {
+            lingoClient.deleteFileById(accessToken, fileId);
             lingoClient.deleteProjectById(accessToken, projectId);
         }
     }
