@@ -16,10 +16,10 @@ public class LingoClientTest extends TestCase {
     @Before
     public void setup() {
         LingoConfiguration info = new LingoConfiguration();
-        info.setClientId("Fill");
-        info.setClientSecret("Me");
-        info.setRedirectUri("In");
-        info.setRefreshToken("Please");
+        info.setClientId("FILL");
+        info.setClientSecret("ME");
+        info.setRedirectUri("IN");
+        info.setRefreshToken("PLEASE");
         info.setIsSandbox(true);
         lingoClient = new LingoClient(info);
     }
@@ -40,7 +40,7 @@ public class LingoClientTest extends TestCase {
     }
 
     @Test
-    public void shouldAuthenticateUserAndReturnAccessToken() {
+    public void shouldAuthenticateUserAndReturnAccessToken() throws LingoUnauthorizedException {
         OauthToken accessToken = lingoClient.getAccessToken();
         assertNotNull("Access token is null", accessToken.getAccessToken());
         assertNotNull("Access token expiration is null", accessToken.getExpiresIn());
@@ -50,7 +50,7 @@ public class LingoClientTest extends TestCase {
     }
 
     @Test
-    public void shouldReturnServicesForAuthenticatedUser() {
+    public void shouldReturnServicesForAuthenticatedUser() throws LingoUnauthorizedException {
         String accessToken = lingoClient.getAccessToken().getAccessToken();
         List<Service> services = lingoClient.getServices(accessToken);
         assertNotNull("Services are null", services);
@@ -63,7 +63,7 @@ public class LingoClientTest extends TestCase {
     }
 
     @Test
-    public void shouldReturnSpecificServiceById() {
+    public void shouldReturnSpecificServiceById() throws LingoUnauthorizedException {
         String accessToken = lingoClient.getAccessToken().getAccessToken();
         long serviceId = lingoClient.getServices(accessToken).get(0).getId();
         Service foundService = lingoClient.getServiceById(accessToken, serviceId);
@@ -73,7 +73,7 @@ public class LingoClientTest extends TestCase {
     }
 
     @Test
-    public void shouldReturnLocalesForAuthenticatedUser() {
+    public void shouldReturnLocalesForAuthenticatedUser() throws LingoUnauthorizedException {
         String accessToken = lingoClient.getAccessToken().getAccessToken();
         List<Locale> locales = lingoClient.getLocales(accessToken);
         assertNotNull("Locales is null", locales);
@@ -87,7 +87,7 @@ public class LingoClientTest extends TestCase {
     }
 
     @Test
-    public void shouldReturnSpecificLocaleById() {
+    public void shouldReturnSpecificLocaleById() throws LingoUnauthorizedException {
         String accessToken = lingoClient.getAccessToken().getAccessToken();
         List<Locale> locales = lingoClient.getLocales(accessToken);
         long localeId = locales.get(0).getId();
@@ -99,14 +99,14 @@ public class LingoClientTest extends TestCase {
     }
 
     @Test
-    public void shouldReturnProjects() {
+    public void shouldReturnProjects() throws LingoUnauthorizedException {
         String accessToken = lingoClient.getAccessToken().getAccessToken();
         List<Project> projects = lingoClient.getProjects(accessToken);
         assertNotNull("Projects is null", projects);
     }
 
     @Test
-    public void shouldReturnSpecificProjectById() {
+    public void shouldReturnSpecificProjectById() throws LingoUnauthorizedException {
         String accessToken = lingoClient.getAccessToken().getAccessToken();
         Project project = lingoClient.createProject(accessToken, getProjectToCreate());
         Project foundProject = lingoClient.getProjectById(accessToken, project.getId());
@@ -119,7 +119,7 @@ public class LingoClientTest extends TestCase {
     }
 
     @Test
-    public void shouldUpdateProject() {
+    public void shouldUpdateProject() throws LingoUnauthorizedException {
         String accessToken = lingoClient.getAccessToken().getAccessToken();
         Project project = lingoClient.createProject(accessToken, getProjectToCreate());
 
@@ -141,7 +141,7 @@ public class LingoClientTest extends TestCase {
     }
 
     @Test
-    public void shouldReturnProjectFiles() {
+    public void shouldReturnProjectFiles() throws LingoUnauthorizedException {
         String accessToken = lingoClient.getAccessToken().getAccessToken();
         Project project = lingoClient.createProject(accessToken, getProjectToCreate());
         assertNotNull("Project is null", project);
@@ -173,7 +173,7 @@ public class LingoClientTest extends TestCase {
     }
 
     @Test
-    public void shouldDeleteProjectFileById() {
+    public void shouldDeleteProjectFileById() throws LingoUnauthorizedException {
         String accessToken = lingoClient.getAccessToken().getAccessToken();
         Project project = lingoClient.createProject(accessToken, getProjectToCreate());
         assertNotNull("Project is null", project);
@@ -191,7 +191,7 @@ public class LingoClientTest extends TestCase {
     }
 
     @Test
-    public void shouldReturnDomainsForAuthenticatedUser() {
+    public void shouldReturnDomainsForAuthenticatedUser() throws LingoUnauthorizedException {
         String accessToken = lingoClient.getAccessToken().getAccessToken();
         List<Domain> domains = lingoClient.getDomains(accessToken);
         assertNotNull("Domains is null", domains);
@@ -205,7 +205,7 @@ public class LingoClientTest extends TestCase {
     }
 
     @Test
-    public void shouldReturnSpecificDomainById() {
+    public void shouldReturnSpecificDomainById() throws LingoUnauthorizedException {
         String accessToken = lingoClient.getAccessToken().getAccessToken();
         List<Domain> domains = lingoClient.getDomains(accessToken);
         assertNotNull("Domains is null", domains);
@@ -219,7 +219,7 @@ public class LingoClientTest extends TestCase {
     }
 
     @Test
-    public void shouldCreateAndDeleteFile() {
+    public void shouldCreateAndDeleteFile() throws LingoUnauthorizedException {
         String accessToken = lingoClient.getAccessToken().getAccessToken();
         File file = lingoClient.createFile(accessToken, "API - TEST FILE");
 
@@ -243,7 +243,7 @@ public class LingoClientTest extends TestCase {
     }
 
     @Test
-    public void shouldReturnContentsOfFile() {
+    public void shouldReturnContentsOfFile() throws LingoUnauthorizedException {
         String accessToken = lingoClient.getAccessToken().getAccessToken();
         File file = lingoClient.createFile(accessToken, "API - TEST FILE");
 
@@ -272,7 +272,7 @@ public class LingoClientTest extends TestCase {
     }
 
     @Test
-    public void shouldAddJobToProject() {
+    public void shouldAddJobToProject() throws LingoUnauthorizedException {
         String accessToken = lingoClient.getAccessToken().getAccessToken();
         Project project = lingoClient.createProject(accessToken, getProjectToCreate());
 
@@ -317,7 +317,7 @@ public class LingoClientTest extends TestCase {
     }
 
     @Test
-    public void shouldReturnFilesForJob() {
+    public void shouldReturnFilesForJob() throws LingoUnauthorizedException {
         String accessToken = lingoClient.getAccessToken().getAccessToken();
         Project project = lingoClient.createProject(accessToken, getProjectToCreate());
 
@@ -360,7 +360,7 @@ public class LingoClientTest extends TestCase {
     }
 
     @Test
-    public void shouldReturnJobsForProject() {
+    public void shouldReturnJobsForProject() throws LingoUnauthorizedException {
         String accessToken = lingoClient.getAccessToken().getAccessToken();
         Project project = lingoClient.createProject(accessToken, getProjectToCreate());
 
@@ -391,6 +391,17 @@ public class LingoClientTest extends TestCase {
             fail();
         } finally {
             lingoClient.deleteProjectById(accessToken, projectId);
+        }
+    }
+
+    @Test
+    public void shouldHandleUnauthorizedRequests() {
+        try {
+            List<Service> services = lingoClient.getServices("bad access token");
+        } catch (LingoUnauthorizedException e) {
+            // noop pass
+        } catch (Exception e) {
+            fail();
         }
     }
 

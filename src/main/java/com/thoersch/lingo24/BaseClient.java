@@ -1,13 +1,16 @@
 package com.thoersch.lingo24;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.ObjectMapper;
 import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
 import com.thoersch.lingo24.representations.PagingInput;
 import org.json.JSONArray;
 
@@ -55,17 +58,17 @@ public abstract class BaseClient {
         return result;
     }
 
-    protected <T> T get(String accessToken, String url, Class<T> clazz) {
+    protected <T> T get(String accessToken, String url, Class<T> clazz) throws LingoUnauthorizedException {
         try {
             HttpResponse<T> response = Unirest.get(getUrl(url)).headers(getHeadersWithAuthorization(accessToken)).asObject(clazz);
             handleErrorResponse(response);
             return response.getBody();
-        } catch (Exception e) {
+        } catch (LingoException | UnirestException e) {
             throw new LingoException(e);
         }
     }
 
-    protected <T> List<T> getList(String accessToken, String url, PagingInput pagingInput, Class<T> clazz) {
+    protected <T> List<T> getList(String accessToken, String url, PagingInput pagingInput, Class<T> clazz) throws LingoUnauthorizedException {
         try {
 
             HttpResponse<JsonNode> response = Unirest.get(getUrl(url)).headers(getHeadersWithAuthorization(accessToken)).queryString(getPagingMap(pagingInput)).asJson();
@@ -73,59 +76,55 @@ public abstract class BaseClient {
             JSONArray jsonResponse = response.getBody().getObject().getJSONArray(CONTENT);
             TypeFactory t = TypeFactory.defaultInstance();
             return getObjectMapper().readValue(jsonResponse.toString(), t.constructCollectionType(ArrayList.class, clazz));
-        } catch (Exception e) {
+        } catch (LingoException | UnirestException | IOException e) {
             throw new LingoException(e);
         }
     }
 
-    protected <T> T create(String accessToken, String url, T payload, Class<T> clazz) {
+    protected <T> T create(String accessToken, String url, T payload, Class<T> clazz) throws LingoUnauthorizedException {
         try {
             HttpResponse<T> response = Unirest.post(getUrl(url)).headers(getHeadersWithAuthorization(accessToken)).body(payload).asObject(clazz);
             handleErrorResponse(response);
             return response.getBody();
-        } catch (Exception e) {
+        } catch (LingoException | UnirestException e) {
             throw new LingoException(e);
         }
     }
 
-    protected void create(String accessToken, String url, Object payload) {
+    protected void create(String accessToken, String url, Object payload) throws LingoUnauthorizedException {
         try {
             HttpResponse<JsonNode> response = Unirest.post(getUrl(url)).headers(getHeadersWithAuthorization(accessToken)).body(payload).asJson();
-            if(response.getStatus() >= 400) {
-                throw new LingoException(response.getBody().getObject().getString("error_description"));
-            }
-        } catch (Exception e) {
+            handleErrorResponse(response);
+        } catch (LingoException | UnirestException e) {
             throw new LingoException(e);
         }
     }
 
-    protected <T> T create(String accessToken, String url, Object payload, Map<String, Object> queryStringMap, Class<T> clazz) {
+    protected <T> T create(String accessToken, String url, Object payload, Map<String, Object> queryStringMap, Class<T> clazz) throws LingoUnauthorizedException {
         try {
             HttpResponse<T> response = Unirest.post(getUrl(url)).headers(getHeadersWithAuthorization(accessToken)).queryString(queryStringMap).body(payload).asObject(clazz);
             handleErrorResponse(response);
             return response.getBody();
-        } catch (Exception e) {
+        } catch (LingoException | UnirestException e) {
             throw new LingoException(e);
         }
     }
 
-    protected <T> T update(String accessToken, String url, Object payload, Class<T> clazz) {
+    protected <T> T update(String accessToken, String url, Object payload, Class<T> clazz) throws LingoUnauthorizedException {
         try {
             HttpResponse<T> response = Unirest.put(getUrl(url)).headers(getHeadersWithAuthorization(accessToken)).body(payload).asObject(clazz);
             handleErrorResponse(response);
             return response.getBody();
-        } catch (Exception e) {
+        } catch (LingoException | UnirestException e) {
             throw new LingoException(e);
         }
     }
 
-    protected void delete(String accessToken, String url) {
+    protected void delete(String accessToken, String url) throws LingoUnauthorizedException {
         try {
             HttpResponse<JsonNode> response = Unirest.delete(getUrl(url)).headers(getHeadersWithAuthorization(accessToken)).asJson();
-            if(response.getStatus() >= 400) {
-                throw new LingoException(response.getBody().getObject().getString("error_description"));
-            }
-        } catch (Exception e) {
+            handleErrorResponse(response);
+        } catch (LingoException | UnirestException e) {
             throw new LingoException(e);
         }
     }
@@ -193,8 +192,10 @@ public abstract class BaseClient {
         return result;
     }
 
-    private void handleErrorResponse(HttpResponse response) {
-        if(response.getStatus() >= 400) {
+    private void handleErrorResponse(HttpResponse response) throws LingoUnauthorizedException {
+        if(response.getStatus() >= 401 && response.getStatus() <= 403) {
+            throw new LingoUnauthorizedException(response.getStatusText());
+        } else if(response.getStatus() >= 400) {
             throw new LingoException(response.getStatusText());
         }
     }

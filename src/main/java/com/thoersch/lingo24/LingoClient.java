@@ -50,7 +50,11 @@ public class LingoClient extends BaseClient {
      */
     public ApiInformation getApiInformation() {
         final String url = "/";
-        return get(null, url, ApiInformation.class);
+        try {
+            return get(null, url, ApiInformation.class);
+        } catch(LingoUnauthorizedException e) {
+            throw new LingoException("Unknown authorization error on non-authenticated call.");
+        }
     }
 
     /**
@@ -59,14 +63,18 @@ public class LingoClient extends BaseClient {
      */
     public ApiStatus getApiStatus() {
         final String url = "/status";
-        return get(null, url, ApiStatus.class);
+        try {
+            return get(null, url, ApiStatus.class);
+        } catch(LingoUnauthorizedException e) {
+            throw new LingoException("Unknown authorization error on non-authenticated call.");
+        }
     }
 
     /**
      * Get an oauth2 access token for interacting with the API.
      * @return
      */
-    public OauthToken getAccessToken() {
+    public OauthToken getAccessToken() throws LingoUnauthorizedException {
         final String url = "/oauth2/access";
         final Map<String, Object> queryStrings = new HashMap<String, Object>() {{
             put(CLIENT_ID, clientId);
@@ -84,7 +92,7 @@ public class LingoClient extends BaseClient {
      * @param accessToken
      * @return
      */
-    public List<Service> getServices(String accessToken) {
+    public List<Service> getServices(String accessToken) throws LingoUnauthorizedException {
         return getServices(accessToken, defaultPagingInput);
     }
 
@@ -94,7 +102,7 @@ public class LingoClient extends BaseClient {
      * @param pagingInput
      * @return
      */
-    public List<Service> getServices(String accessToken, PagingInput pagingInput) {
+    public List<Service> getServices(String accessToken, PagingInput pagingInput) throws LingoUnauthorizedException {
         final String url = "/services";
         return getList(accessToken, url, pagingInput, Service.class);
     }
@@ -105,7 +113,7 @@ public class LingoClient extends BaseClient {
      * @param serviceId
      * @return
      */
-    public Service getServiceById(String accessToken, long serviceId) {
+    public Service getServiceById(String accessToken, long serviceId) throws LingoUnauthorizedException {
         final String url = String.format("/services/%d", serviceId);
         return get(accessToken, url, Service.class);
     }
@@ -115,7 +123,7 @@ public class LingoClient extends BaseClient {
      * @param accessToken
      * @return
      */
-    public List<Locale> getLocales(String accessToken) {
+    public List<Locale> getLocales(String accessToken) throws LingoUnauthorizedException {
         return getLocales(accessToken, defaultPagingInput);
     }
 
@@ -125,13 +133,13 @@ public class LingoClient extends BaseClient {
      * @param pagingInput
      * @return
      */
-    public List<Locale> getLocales(String accessToken, PagingInput pagingInput) {
+    public List<Locale> getLocales(String accessToken, PagingInput pagingInput) throws LingoUnauthorizedException {
         final String url = "/locales";
 
         return getList(accessToken, url, pagingInput, Locale.class);
     }
 
-    public Locale getLocaleById(String accessToken, long localeId) {
+    public Locale getLocaleById(String accessToken, long localeId) throws LingoUnauthorizedException {
         final String url = String.format("/locales/%d", localeId);
         return get(accessToken, url, Locale.class);
     }
@@ -141,7 +149,7 @@ public class LingoClient extends BaseClient {
      * @param accessToken
      * @return
      */
-    public List<Domain> getDomains(String accessToken) {
+    public List<Domain> getDomains(String accessToken) throws LingoUnauthorizedException {
         return getDomains(accessToken, defaultPagingInput);
     }
 
@@ -151,7 +159,7 @@ public class LingoClient extends BaseClient {
      * @param pagingInput
      * @return
      */
-    public List<Domain> getDomains(String accessToken, PagingInput pagingInput) {
+    public List<Domain> getDomains(String accessToken, PagingInput pagingInput) throws LingoUnauthorizedException {
         final String url = "/domains";
         return getList(accessToken, url, pagingInput, Domain.class);
     }
@@ -162,7 +170,7 @@ public class LingoClient extends BaseClient {
      * @param domainId
      * @return
      */
-    public Domain getDomainById(String accessToken, long domainId) {
+    public Domain getDomainById(String accessToken, long domainId) throws LingoUnauthorizedException {
         final String url = String.format("/domains/%d", domainId);
         return get(accessToken, url, Domain.class);
     }
@@ -173,7 +181,7 @@ public class LingoClient extends BaseClient {
      * @param fileName
      * @return
      */
-    public File createFile(String accessToken, String fileName) {
+    public File createFile(String accessToken, String fileName) throws LingoUnauthorizedException {
         final String url = "/files";
         File payload = new File(0L, fileName, FileType.SOURCE);
         return create(accessToken, url, payload, File.class);
@@ -185,7 +193,7 @@ public class LingoClient extends BaseClient {
      * @param fileId
      * @return
      */
-    public File getFileById(String accessToken, long fileId) {
+    public File getFileById(String accessToken, long fileId) throws LingoUnauthorizedException {
         final String url = String.format("/files/%d", fileId);
         return get(accessToken, url, File.class);
     }
@@ -195,7 +203,7 @@ public class LingoClient extends BaseClient {
      * @param accessToken
      * @param fileId
      */
-    public void deleteFileById(String accessToken, long fileId) {
+    public void deleteFileById(String accessToken, long fileId) throws LingoUnauthorizedException {
         final String url = String.format("/files/%d", fileId);
         delete(accessToken, url);
     }
@@ -206,7 +214,7 @@ public class LingoClient extends BaseClient {
      * @param fileId
      * @return
      */
-    public String getFileContent(String accessToken, long fileId) {
+    public String getFileContent(String accessToken, long fileId) throws LingoUnauthorizedException {
         final String url = String.format("/files/%d/content", fileId);
         return get(accessToken, url, String.class);
     }
@@ -218,7 +226,7 @@ public class LingoClient extends BaseClient {
      * @param content
      * @return
      */
-    public void updateFileContent(String accessToken, long fileId, String content) {
+    public void updateFileContent(String accessToken, long fileId, String content) throws LingoUnauthorizedException {
         final String url = String.format("/files/%d/content", fileId);
         update(accessToken, url, content, String.class);
     }
@@ -228,7 +236,7 @@ public class LingoClient extends BaseClient {
      * @param accessToken
      * @return
      */
-    public List<Project> getProjects(String accessToken) {
+    public List<Project> getProjects(String accessToken) throws LingoUnauthorizedException {
         return getProjects(accessToken, defaultPagingInput);
     }
 
@@ -238,7 +246,7 @@ public class LingoClient extends BaseClient {
      * @param pagingInput
      * @return
      */
-    public List<Project> getProjects(String accessToken, PagingInput pagingInput) {
+    public List<Project> getProjects(String accessToken, PagingInput pagingInput) throws LingoUnauthorizedException {
         final String url = "/projects";
         return getList(accessToken, url, pagingInput, Project.class);
     }
@@ -249,7 +257,7 @@ public class LingoClient extends BaseClient {
      * @param project
      * @return
      */
-    public Project createProject(String accessToken, Project project) {
+    public Project createProject(String accessToken, Project project) throws LingoUnauthorizedException {
         final String url = "/projects";
         return create(accessToken, url, project, Project.class);
     }
@@ -260,7 +268,7 @@ public class LingoClient extends BaseClient {
      * @param projectId
      * @return
      */
-    public Project getProjectById(String accessToken, long projectId) {
+    public Project getProjectById(String accessToken, long projectId) throws LingoUnauthorizedException {
         final String url = String.format("/projects/%d", projectId);
         return get(accessToken, url, Project.class);
     }
@@ -270,7 +278,7 @@ public class LingoClient extends BaseClient {
      * @param accessToken
      * @param projectId
      */
-    public void deleteProjectById(String accessToken, long projectId) {
+    public void deleteProjectById(String accessToken, long projectId) throws LingoUnauthorizedException {
         final String url = String.format("/projects/%d", projectId);
         delete(accessToken, url);
     }
@@ -282,7 +290,7 @@ public class LingoClient extends BaseClient {
      * @param project
      * @return
      */
-    public Project updateProjectById(String accessToken, long projectId, Project project) {
+    public Project updateProjectById(String accessToken, long projectId, Project project) throws LingoUnauthorizedException {
         if (projectId != project.getId()) {
             throw new LingoException("Provided project and projectId are different.");
         }
@@ -297,7 +305,7 @@ public class LingoClient extends BaseClient {
      * @param projectId
      * @return
      */
-    public List<File> getProjectFiles(String accessToken, long projectId) {
+    public List<File> getProjectFiles(String accessToken, long projectId) throws LingoUnauthorizedException {
         return getProjectFiles(accessToken, projectId, defaultPagingInput);
     }
 
@@ -308,7 +316,7 @@ public class LingoClient extends BaseClient {
      * @param pagingInput
      * @return
      */
-    public List<File> getProjectFiles(String accessToken, long projectId, PagingInput pagingInput) {
+    public List<File> getProjectFiles(String accessToken, long projectId, PagingInput pagingInput) throws LingoUnauthorizedException {
         final String url = String.format("/projects/%d/files", projectId);
         return getList(accessToken, url, pagingInput, File.class);
     }
@@ -319,7 +327,7 @@ public class LingoClient extends BaseClient {
      * @param projectId
      * @param file
      */
-    public void addFileToProject(String accessToken, long projectId, File file) {
+    public void addFileToProject(String accessToken, long projectId, File file) throws LingoUnauthorizedException {
         final String url = String.format("/projects/%d/files", projectId);
         create(accessToken, url, file);
     }
@@ -330,7 +338,7 @@ public class LingoClient extends BaseClient {
      * @param projectId
      * @param fileId
      */
-    public void deleteProjectFileById(String accessToken, long projectId, long fileId) {
+    public void deleteProjectFileById(String accessToken, long projectId, long fileId) throws LingoUnauthorizedException {
         final String url = String.format("/projects/%d/files/%d", projectId, fileId);
         delete(accessToken, url);
     }
@@ -341,7 +349,7 @@ public class LingoClient extends BaseClient {
      * @param projectId
      * @return
      */
-    public List<Job> getJobsForProject(String accessToken, long projectId) {
+    public List<Job> getJobsForProject(String accessToken, long projectId) throws LingoUnauthorizedException {
         return getJobsForProject(accessToken, projectId, defaultPagingInput);
     }
 
@@ -352,7 +360,7 @@ public class LingoClient extends BaseClient {
      * @param pagingInput
      * @return
      */
-    public List<Job> getJobsForProject(String accessToken, long projectId, PagingInput pagingInput) {
+    public List<Job> getJobsForProject(String accessToken, long projectId, PagingInput pagingInput) throws LingoUnauthorizedException {
         final String url = String.format("/projects/%d/jobs", projectId);
         return getList(accessToken, url, pagingInput, Job.class);
     }
@@ -364,7 +372,7 @@ public class LingoClient extends BaseClient {
      * @param job
      * @return
      */
-    public Job addJobToProject(String accessToken, long projectId, Job job) {
+    public Job addJobToProject(String accessToken, long projectId, Job job) throws LingoUnauthorizedException {
         final String url = String.format("/projects/%d/jobs", projectId);
         return create(accessToken, url, job, Job.class);
     }
@@ -375,7 +383,7 @@ public class LingoClient extends BaseClient {
      * @param projectId
      * @param jobId
      */
-    public void deleteJobById(String accessToken, long projectId, long jobId) {
+    public void deleteJobById(String accessToken, long projectId, long jobId) throws LingoUnauthorizedException {
         final String url = String.format("/projects/%d/jobs/%d", projectId, jobId);
         delete(accessToken, url);
     }
@@ -387,7 +395,7 @@ public class LingoClient extends BaseClient {
      * @param jobId
      * @return
      */
-    public Job getJobById(String accessToken, long projectId, long jobId) {
+    public Job getJobById(String accessToken, long projectId, long jobId) throws LingoUnauthorizedException {
         final String url = String.format("/projects/%d/jobs/%d", projectId, jobId);
         return get(accessToken, url, Job.class);
     }
@@ -399,7 +407,7 @@ public class LingoClient extends BaseClient {
      * @param jobId
      * @return
      */
-    public List<File> getFilesInJob(String accessToken, long projectId, long jobId) {
+    public List<File> getFilesInJob(String accessToken, long projectId, long jobId) throws LingoUnauthorizedException {
         return getFilesInJob(accessToken, projectId, jobId, defaultPagingInput);
     }
 
@@ -411,7 +419,7 @@ public class LingoClient extends BaseClient {
      * @param pagingInput
      * @return
      */
-    public List<File> getFilesInJob(String accessToken, long projectId, long jobId, PagingInput pagingInput) {
+    public List<File> getFilesInJob(String accessToken, long projectId, long jobId, PagingInput pagingInput) throws LingoUnauthorizedException {
         final String url = String.format("/projects/%d/jobs/%d/files", projectId, jobId);
         return getList(accessToken, url, pagingInput, File.class);
     }
@@ -423,7 +431,7 @@ public class LingoClient extends BaseClient {
      * @param jobId
      * @return
      */
-    public JobMetrics getProjectJobMetrics(String accessToken, long projectId, long jobId) {
+    public JobMetrics getProjectJobMetrics(String accessToken, long projectId, long jobId) throws LingoUnauthorizedException {
         final String url = String.format("/projects/%d/jobs/%d/metrics", projectId, jobId);
         return get(accessToken, url, JobMetrics.class);
     }
@@ -435,7 +443,7 @@ public class LingoClient extends BaseClient {
      * @param jobId
      * @return
      */
-    public Price getProjectJobPrice(String accessToken, long projectId, long jobId) {
+    public Price getProjectJobPrice(String accessToken, long projectId, long jobId) throws LingoUnauthorizedException {
         final String url = String.format("/projects/%d/jobs/%d/price", projectId, jobId);
         return get(accessToken, url, Price.class);
     }
