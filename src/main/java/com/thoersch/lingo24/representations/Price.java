@@ -2,8 +2,10 @@ package com.thoersch.lingo24.representations;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import java.io.Serializable;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Price {
+public class Price implements Serializable {
     private CurrencyCode currencyCode;
     private String totalWoVatWDiscount;
     private String totalWoVatWoDiscount;
