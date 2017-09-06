@@ -2,8 +2,10 @@ package com.thoersch.lingo24.representations;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import java.io.Serializable;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Service {
+public class Service implements Serializable {
     private long id;
     private String name;
     private String description;
