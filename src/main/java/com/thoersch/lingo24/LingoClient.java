@@ -1,7 +1,9 @@
 package com.thoersch.lingo24;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.thoersch.lingo24.representations.*;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +24,7 @@ public class LingoClient extends BaseClient {
     private final String redirectUri;
     private final boolean isSandbox;
     private final PagingInput defaultPagingInput;
+    private final ObjectMapper objectMapper;
 
     public LingoClient(LingoConfiguration lingoInfo) {
         super(VERSION);
@@ -31,6 +34,7 @@ public class LingoClient extends BaseClient {
         this.clientSecret = lingoInfo.getClientSecret();
         this.isSandbox = lingoInfo.isSandbox();
         this.defaultPagingInput = getDefaultPagingInput();
+        this.objectMapper = new ObjectMapper();
 
         if(refreshToken == null || redirectUri == null || clientId == null || clientSecret == null) {
             throw new LingoException("All configuration values required.");
@@ -247,7 +251,13 @@ public class LingoClient extends BaseClient {
      */
     public void updateFileContent(String accessToken, long fileId, String content) throws LingoUnauthorizedException {
         final String url = String.format("/files/%d/content", fileId);
-        update(accessToken, url, content, String.class);
+
+        try {
+            JsonNode node = objectMapper.readTree(content);
+            update(accessToken, url, node, JsonNode.class);
+        } catch (LingoException | IOException e) {
+            throw new LingoException("Unable to update file content" + e.getMessage());
+        }
     }
 
     /**
