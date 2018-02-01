@@ -4,16 +4,16 @@
   construct the client with required information from that oauth connection. For information on this process, please consult
   the [Lingo24 official documentation](https://developer.lingo24.com/documentation).
   
-##Installation:##
+## Installation: ##
 
     <dependency>
         <groupId>com.tylerhoersch.lingo24</groupId>
         <artifactId>lingo24</artifactId>
-        <version>1.0</version>
+        <version>1.1</version>
     </dependency>
     
 
-##Sample Usage:##
+## Sample Usage: ##
       
     LingoConfiguration config = new LingoConfiguration.Builder().clientId("clientId").clientSecret("secret").redirectUri("localhost").refreshToken("refresh").isSandbox(true).build();
     
@@ -25,7 +25,7 @@
  
 
 
-##LingoClient:##
+## LingoClient: ##
   
 **Constructor**
         
@@ -44,7 +44,7 @@ A builder exists for LingoInfo object
    
    For testing purposes, use the `.isSandbox(true)` flag as part of the configuration of the lingo client.
 
-##Individual API Methods##
+## Individual API Methods ##
 
     ApiInformation getApiInformation();
     
@@ -119,11 +119,11 @@ A builder exists for LingoInfo object
     Price getProjectJobPrice(String accessToken, long projectId, long jobId);
     
     
-##Pagination:##
+## Pagination: ##
   
   Pagination controls are available on all API methods that return a collection of entities. If `PagingInput` is not specified, the default pagination is applied which consists of `pageSize=10`, `pageNumber=0`, and no sort order.
 
-##Notes:##
+## Notes: ##
 
   * *Disclaimer*: This is a community project and has no direct ties to Lingo24
   * Please track any and all issues in the github issues tracker

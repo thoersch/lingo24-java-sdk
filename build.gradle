@@ -1,5 +1,5 @@
 group 'com.tylerhoersch.lingo24'
-version '1.0-SNAPSHOT'
+version '1.1'
 
 apply plugin: 'java'
 apply plugin: 'maven'
@@ -45,7 +45,7 @@ uploadArchives {
         mavenDeployer {
             beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
 
-            repository(url: "https://oss.sonatype.org/content/repositories/snapshots") {
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2") {
                 authentication(userName: sonatypeUsername, password: sonatypePassword)
             }
 
@@ -77,6 +77,14 @@ uploadArchives {
                     developer {
                         id 'tjharke13'
                         name 'Thomas Harke'
+                    }
+                    developer {
+                        id 'jasenkoh'
+                        name 'Jasenko Hadziomeragic'
+                    }
+                    developer {
+                        id 'justindev'
+                        name 'Justin Gottschalk'
                     }
                 }
             }
