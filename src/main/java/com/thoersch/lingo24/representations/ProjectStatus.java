@@ -6,6 +6,7 @@ public enum ProjectStatus {
     QUOTED("QUOTED"),
     IN_PROGRESS("IN_PROGRESS"),
     FINISHED("FINISHED"),
+    EXPIRED("EXPIRED"),
     CANCELLED("CANCELLED");
 
     ProjectStatus(String value) {
